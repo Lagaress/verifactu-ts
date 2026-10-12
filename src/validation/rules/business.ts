@@ -185,8 +185,9 @@ function foreignId(
     ) {
       const prefix = country === 'GR' ? 'EL' : country;
       if (prefix !== undefined) {
+        // Irlanda del Norte usa el prefijo XI, que no es un CodigoPais: se admite con GB.
         c.check(
-          value.startsWith(prefix),
+          value.startsWith(prefix) || (prefix === 'GB' && value.startsWith('XI')),
           `${path}.country`,
           'business.vat-country-mismatch',
           'El código de país no coincide con los dos primeros caracteres del NIF-IVA.',
@@ -267,6 +268,8 @@ function registration(r: RegistrationRecord, c: Collector, today: string): void 
   const lines = r.breakdown;
   const taxOf = (l: BreakdownDetails) => l.taxType ?? '01';
   const isVatOrIgic = (l: BreakdownDetails) => taxOf(l) === '01' || taxOf(l) === '03';
+  // §3.1.3.1 y §3.1.3.7 solo aplican con impuesto IVA, IGIC o sin informar.
+  const hasVatOrIgicLine = lines.some(isVatOrIgic);
   const hasDeferredRegime = lines.some(
     (l) => isVatOrIgic(l) && (l.regimeType === '14' || l.regimeType === '15'),
   );
@@ -290,7 +293,7 @@ function registration(r: RegistrationRecord, c: Collector, today: string): void 
     );
     if (opDate !== undefined && issueDate < opDate) {
       c.check(
-        hasDeferredRegime,
+        !hasVatOrIgicLine || hasDeferredRegime,
         'invoiceId.issueDate',
         'business.issue-before-operation',
         'La fecha de expedición solo puede ser anterior a la de operación con ClaveRegimen 14 o 15 (IVA o IGIC).',
@@ -399,7 +402,7 @@ function registration(r: RegistrationRecord, c: Collector, today: string): void 
     );
     if (opDate > today) {
       c.check(
-        hasDeferredRegime,
+        !hasVatOrIgicLine || hasDeferredRegime,
         'operationDate',
         'business.operation-date-future',
         'La fecha de operación solo puede ser futura con ClaveRegimen 14 o 15 (IVA o IGIC).',
@@ -762,14 +765,18 @@ function breakdownLine(
 
   // §15.5 OperacionExenta
   if (exempt) {
-    if (op === 'E7' || op === 'E8')
-      c.check(
-        tax === '03',
+    // §15.5: con IVA solo la lista L10 (E1–E6); E7 y E8 son claves adicionales de IGIC.
+    if ((op === 'E7' || op === 'E8') && vat) {
+      c.add(
         `${path}.operationType`,
         'business.exempt-list',
-        `La exención ${op} solo se admite con IGIC.`,
-        { aeatCode: 1182, reference: ctxRef('15.5') },
+        `La exención ${op} no se admite con IVA (lista L10).`,
+        {
+          aeatCode: 1182,
+          reference: ctxRef('15.5'),
+        },
       );
+    }
     if (vatOrIgic && regime === '01')
       c.check(
         op !== 'E2' && op !== 'E3',

@@ -181,7 +181,9 @@ function assertParticles(
       }
       const chosen = present[0];
       if (!chosen) {
-        if (p.min > 0)
+        // Una opción cuyos elementos son todos opcionales puede quedar vacía (XSD §3.8.4).
+        const emptiable = p.options.some((o) => o.every((x) => x.min === 0));
+        if (p.min > 0 && !emptiable)
           throw new XmlSchemaError(
             path,
             `debe informarse una de: ${p.options.map((o) => particleNames(o).join('+')).join(' | ')}`,

@@ -28,6 +28,10 @@ export interface XmlElement {
   readonly start: number;
   /** Posición siguiente al cierre del elemento en la entrada. */
   readonly end: number;
+  /** Namespaces en ámbito (prefijo → URI; `''` es el namespace por defecto). */
+  readonly scope: ReadonlyMap<string, string>;
+  /** Prefijos declarados en el propio elemento. */
+  readonly declared: ReadonlySet<string>;
 }
 
 const XML_NS = 'http://www.w3.org/XML/1998/namespace';
@@ -58,6 +62,7 @@ interface MutableElement {
   start: number;
   end: number;
   scope: Map<string, string>;
+  declared: Set<string>;
 }
 
 /**
@@ -81,12 +86,13 @@ export function parseXml(input: string, limits: ParseLimits = {}): XmlElement {
     throw new XmlParseError(msg, at);
   };
 
+  // Fin de línea normalizado a LF (XML 1.0 §2.11) antes de resolver referencias.
   const decode = (raw: string, at: number): string =>
-    raw.replace(/&([^;&]*);?/g, (match, ref: string) => {
+    raw.replace(/\r\n?/g, '\n').replace(/&([^;&]*);?/g, (match, ref: string) => {
       if (!match.endsWith(';')) fail('Carácter «&» sin escapar', at);
-      if (ref.startsWith('#x') || ref.startsWith('#X'))
-        return codePoint(Number.parseInt(ref.slice(2), 16), at);
-      if (ref.startsWith('#')) return codePoint(Number.parseInt(ref.slice(1), 10), at);
+      if (/^#x[0-9a-fA-F]+$/.test(ref)) return codePoint(Number.parseInt(ref.slice(2), 16), at);
+      if (/^#[0-9]+$/.test(ref)) return codePoint(Number.parseInt(ref.slice(1), 10), at);
+      if (ref.startsWith('#')) fail(`Referencia de carácter no válida: &${ref};`, at);
       const v = PREDEFINED[ref];
       if (v === undefined) fail(`Entidad no admitida: &${ref};`, at);
       return v ?? '';
@@ -144,14 +150,15 @@ export function parseXml(input: string, limits: ParseLimits = {}): XmlElement {
       const end = input.indexOf(']]>', i + 9);
       if (end === -1) fail('Sección CDATA sin cerrar');
       if (stack.length === 0) fail('CDATA fuera del elemento raíz');
-      appendText(input.slice(i + 9, end), i);
+      appendText(input.slice(i + 9, end).replace(/\r\n?/g, '\n'), i);
       i = end + 3;
     } else if (input.startsWith('<!', i)) {
       fail('Declaraciones DOCTYPE/ENTITY no admitidas');
     } else if (input.startsWith('</', i)) {
       const end = input.indexOf('>', i);
       if (end === -1) fail('Etiqueta de cierre sin terminar');
-      const name = input.slice(i + 2, end).trim();
+      const name = input.slice(i + 2, end).trimEnd();
+      if (!NAME_RE.test(name)) fail(`Etiqueta de cierre no válida </${name}>`);
       const current = stack.pop();
       if (current?.qname !== name) return fail(`Etiqueta de cierre inesperada </${name}>`);
       i = end + 1;
@@ -164,13 +171,20 @@ export function parseXml(input: string, limits: ParseLimits = {}): XmlElement {
       if (stack.length >= maxDepth) fail(`Se supera la profundidad máxima (${maxDepth})`, start);
 
       const parentScope = stack[stack.length - 1]?.scope ?? rootScope;
-      const scope = new Map(parentScope);
+      // El ámbito solo se copia si el elemento declara namespaces (evita un coste
+      // proporcional a namespaces × elementos con entradas maliciosas).
+      let scope = parentScope;
+      const declared = new Set<string>();
       const attributes = new Map<string, string>();
       for (const [k, v] of attrs) {
-        const value = decode(v, start);
-        if (k === 'xmlns') scope.set('', value);
-        else if (k.startsWith('xmlns:')) scope.set(k.slice(6), value);
-        else {
+        // Normalización de valores de atributo (XML 1.0 §3.3.3): tab, CR y LF literales → espacio.
+        const value = decode(v.replace(/\r\n?|[\t\n]/g, ' '), start);
+        if (k === 'xmlns' || k.startsWith('xmlns:')) {
+          if (scope === parentScope) scope = new Map(parentScope);
+          const prefix = k === 'xmlns' ? '' : k.slice(6);
+          scope.set(prefix, value);
+          declared.add(prefix);
+        } else {
           if (attributes.has(k)) fail(`Atributo duplicado: ${k}`, start);
           attributes.set(k, value);
         }
@@ -190,6 +204,7 @@ export function parseXml(input: string, limits: ParseLimits = {}): XmlElement {
         start,
         end: i,
         scope,
+        declared,
       };
       const parent = stack[stack.length - 1];
       if (parent) parent.children.push(el);
@@ -264,7 +279,7 @@ export function readWire(
   path = el.local,
 ): unknown {
   const def = typeDef(schema, type);
-  if (type === 'ds:Signature') return { raw: source.slice(el.start, el.end) };
+  if (type === 'ds:Signature') return { raw: detachFragment(el, source) };
   if (def?.kind !== 'complex') {
     if (el.children.length > 0) throw new XmlSchemaError(path, 'se esperaba un valor de texto');
     return el.text;
@@ -300,6 +315,39 @@ function buildIndex(
     else for (const opt of p.options) buildIndex(opt, into);
   }
   return into;
+}
+
+/**
+ * Extrae un elemento como fragmento XML autónomo: si usa prefijos declarados en sus ancestros,
+ * añade esas declaraciones a su etiqueta de apertura. Así el fragmento sigue siendo XML bien
+ * formado al insertarlo en otro documento.
+ */
+export function detachFragment(el: XmlElement, source: string): string {
+  const used = new Set<string>();
+  const walk = (e: XmlElement): void => {
+    const c = e.qname.indexOf(':');
+    used.add(c === -1 ? '' : e.qname.slice(0, c));
+    for (const a of e.attributes.keys()) {
+      const ac = a.indexOf(':');
+      if (ac !== -1) used.add(a.slice(0, ac));
+    }
+    e.children.forEach(walk);
+  };
+  walk(el);
+  const missing: string[] = [];
+  for (const prefix of used) {
+    if (prefix === 'xml' || el.declared.has(prefix)) continue;
+    const uri = el.scope.get(prefix);
+    if (uri === undefined || (prefix === '' && uri === '')) continue;
+    // Los descendientes que lo redeclaran no dependen del ancestro, pero declararlo es inocuo.
+    missing.push(
+      ` ${prefix === '' ? 'xmlns' : `xmlns:${prefix}`}="${uri.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"`,
+    );
+  }
+  const raw = source.slice(el.start, el.end);
+  return missing.length === 0
+    ? raw
+    : `<${el.qname}${missing.sort().join('')}${raw.slice(el.qname.length + 1)}`;
 }
 
 /** Busca el primer hijo con un namespace y nombre local dados. */

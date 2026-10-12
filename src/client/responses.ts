@@ -15,7 +15,7 @@ import { SF } from '../xml/generated/suministro-informacion.schema.ts';
 import { SFLR } from '../xml/generated/suministro-lr.schema.ts';
 import { childElement, parseXml, readWire, type XmlElement } from '../xml/reader.ts';
 import { mergeSchemas } from '../xml/schema-decode.ts';
-import { elementType } from '../xml/schema-walk.ts';
+import { assertWire, elementType } from '../xml/schema-walk.ts';
 import { SOAP_ENV_NS } from '../xml/soap.ts';
 import { SoapFaultError, TransportError, UnexpectedResponseError } from './errors.ts';
 
@@ -160,9 +160,10 @@ function readPayload(
   }
   try {
     // Se ignoran elementos desconocidos por si la AEAT añade campos nuevos a las respuestas.
-    return readWire(schema, elementType(schema, element), payload, xml, {
-      unknownElements: 'ignore',
-    });
+    const type = elementType(schema, element);
+    const wire = readWire(schema, type, payload, xml, { unknownElements: 'ignore' });
+    assertWire(schema, type, wire, local);
+    return wire;
   } catch (cause) {
     if (cause instanceof XmlSchemaError)
       throw new UnexpectedResponseError(`Respuesta con estructura inesperada: ${cause.message}`, {

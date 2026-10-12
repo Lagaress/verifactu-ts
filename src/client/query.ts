@@ -63,7 +63,9 @@ export function buildQueryXml(
     Cabecera: {
       IDVersion: SPEC_VERSION.idVersion,
       ...(context.asRecipient ? { Destinatario: party } : { ObligadoEmision: party }),
-      ...(context.viaRepresentative && { IndicadorRepresentante: 'S' as const }),
+      // Solo se admite cuando se consulta como obligado tributario (nota del XSD en CabeceraConsultaSf).
+      ...(context.viaRepresentative &&
+        !context.asRecipient && { IndicadorRepresentante: 'S' as const }),
     },
     FiltroConsulta: {
       PeriodoImputacion: {

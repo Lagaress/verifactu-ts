@@ -13,7 +13,7 @@ import { todayInMadrid } from '../validation/rules/business.ts';
 import { validateRecord } from '../validation/validate.ts';
 import type { Violation } from '../validation/violation.ts';
 import { buildSubmissionXml, soapEnvelope, type SubmissionHeader } from '../xml/soap.ts';
-import { BatchLimitError } from './errors.ts';
+import { BatchLimitError, UnexpectedResponseError } from './errors.ts';
 import { buildQueryXml, type QueryFilter } from './query.ts';
 import {
   parseQueryResponse,
@@ -150,10 +150,20 @@ export class AeatClient {
     options: { asRecipient?: boolean; signal?: AbortSignal } = {},
   ): AsyncGenerator<QueryRecord, void, undefined> {
     let pageKey: InvoiceIdentifier | undefined;
+    const seen = new Set<string>();
     do {
       const page = await this.queryPage(filter, { ...options, ...(pageKey && { pageKey }) });
       yield* page.records;
       pageKey = page.nextPageKey;
+      if (pageKey) {
+        // Protección frente a una respuesta que repita la misma clave de paginación.
+        const key = `${pageKey.issuerId}|${pageKey.invoiceNumber}|${pageKey.issueDate}`;
+        if (seen.has(key))
+          throw new UnexpectedResponseError(
+            'La AEAT ha devuelto una clave de paginación repetida.',
+          );
+        seen.add(key);
+      }
     } while (pageKey);
   }
 

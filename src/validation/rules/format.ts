@@ -61,7 +61,16 @@ function noSurroundingSpaces(c: Collector, value: string, path: string): void {
   );
 }
 
-export function invoiceIdentifier(c: Collector, id: InvoiceIdentifier, path: string): void {
+/**
+ * @param strict aplicar la lista de caracteres de NumSerieFactura (§3.1.3.1), que solo rige para
+ *   el IDFactura del propio registro; las facturas rectificadas o sustituidas pueden ser anteriores.
+ */
+export function invoiceIdentifier(
+  c: Collector,
+  id: InvoiceIdentifier,
+  path: string,
+  strict = true,
+): void {
   nif(c, id.issuerId, `${path}.issuerId`);
   const n = id.invoiceNumber;
   if (
@@ -73,13 +82,13 @@ export function invoiceIdentifier(c: Collector, id: InvoiceIdentifier, path: str
     )
   ) {
     c.check(
-      INVOICE_NUMBER_RE.test(n),
+      !strict || INVOICE_NUMBER_RE.test(n),
       `${path}.invoiceNumber`,
       'format.invoice-number-chars',
       'El número de serie solo admite caracteres ASCII imprimibles (32–126) salvo " \' < > =.',
       { reference: `${REF_VALIDACIONES} §3.1` },
     );
-    noSurroundingSpaces(c, n, `${path}.invoiceNumber`);
+    if (strict) noSurroundingSpaces(c, n, `${path}.invoiceNumber`);
   }
   c.check(
     isIsoDate(id.issueDate),
@@ -172,7 +181,7 @@ export function formatRules(record: InvoiceRecord, c: Collector): void {
     'La huella debe tener 64 caracteres hexadecimales en mayúsculas.',
   );
   if (record.previous) {
-    invoiceIdentifier(c, record.previous.invoiceId, 'previous.invoiceId');
+    invoiceIdentifier(c, record.previous.invoiceId, 'previous.invoiceId', false);
     c.check(
       HASH_RE.test(record.previous.hash),
       'previous.hash',
@@ -205,10 +214,10 @@ export function formatRules(record: InvoiceRecord, c: Collector): void {
     );
   }
   record.correctedInvoices?.forEach((id, i) => {
-    invoiceIdentifier(c, id, `correctedInvoices[${i}]`);
+    invoiceIdentifier(c, id, `correctedInvoices[${i}]`, false);
   });
   record.replacedInvoices?.forEach((id, i) => {
-    invoiceIdentifier(c, id, `replacedInvoices[${i}]`);
+    invoiceIdentifier(c, id, `replacedInvoices[${i}]`, false);
   });
   c.check(
     (record.correctedInvoices?.length ?? 0) <= 1000,

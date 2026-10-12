@@ -180,6 +180,11 @@ Errores que puede lanzar:
 | `TransportError`   | Falla la red, hay un HTTP inesperado o la respuesta no es XML. Lleva `retryable`. |
 | `CertificateError` | El certificado no se puede usar: contraseña incorrecta o algoritmos antiguos.     |
 
+**Reintentos.** Si un `TransportError` llega después de enviar la petición (por ejemplo, un
+corte mientras se espera la respuesta), la AEAT puede haber registrado ya los registros. Al
+reintentar, esos registros vendrán como duplicados (error 3000) con `item.duplicate`. Si el
+estado del duplicado es `Correcta` o `AceptadaConErrores`, considéralos entregados.
+
 **Certificados antiguos.** Muchos PKCS#12 exportados desde Windows o la FNMT usan RC2-40, que
 OpenSSL 3 ya no admite. `nodeTransport` lo detecta al crearse y explica cómo convertirlo. Otra
 opción es ejecutar Node con `NODE_OPTIONS=--openssl-legacy-provider`.

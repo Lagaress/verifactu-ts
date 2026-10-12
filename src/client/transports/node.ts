@@ -97,7 +97,6 @@ export function nodeTransport(
           method: 'POST',
           agent,
           headers: { ...req.headers, 'Content-Length': String(body.length) },
-          timeout: timeoutMs,
           ...(req.signal && { signal: req.signal }),
         },
         (res) => {
@@ -116,10 +115,15 @@ export function nodeTransport(
           });
         },
       );
-      r.on('timeout', () => {
+      // Plazo total (no solo de inactividad del socket): una respuesta que llega con cuentagotas
+      // también se corta.
+      const deadline = setTimeout(() => {
         r.destroy(
           new TransportError(`La AEAT no ha respondido en ${timeoutMs} ms.`, { retryable: true }),
         );
+      }, timeoutMs);
+      r.on('close', () => {
+        clearTimeout(deadline);
       });
       r.on('error', (cause) => {
         if (cause instanceof TransportError) {
