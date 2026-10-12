@@ -49,6 +49,10 @@
       "types": "./dist/testing/index.d.ts",
       "default": "./dist/testing/index.js"
     },
+    "./qr/render": {
+      "types": "./dist/qr/render/index.d.ts",
+      "default": "./dist/qr/render/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -85,6 +89,7 @@
     "esbuild": "0.28.2",
     "eslint": "10.12.0",
     "fast-check": "4.10.2",
+    "jsqr": "1.4.0",
     "prettier": "3.9.10",
     "publint": "0.3.25",
     "typescript": "6.0.3",

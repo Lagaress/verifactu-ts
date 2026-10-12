@@ -4,3 +4,4 @@ spec/
 package-lock.json
 src/xml/generated/
 src/spec/generated/
+test/fixtures/nayuki/

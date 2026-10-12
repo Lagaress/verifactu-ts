@@ -11,6 +11,7 @@ export default tseslint.config(
       'spec/',
       'src/xml/generated/',
       'src/spec/generated/',
+      'test/fixtures/',
     ],
   },
   js.configs.recommended,

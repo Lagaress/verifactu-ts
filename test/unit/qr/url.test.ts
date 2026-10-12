@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createRegistrationRecord, InvalidArgumentError, qrUrl } from '../../src/index.ts';
-import { f1Input } from '../helpers.ts';
+import { createRegistrationRecord, InvalidArgumentError, qrUrl } from '../../../src/index.ts';
+import { f1Input } from '../../helpers.ts';
 
 const data = (invoiceNumber: string, amount = '100.23') => ({
   issuerId: 'A86018322',

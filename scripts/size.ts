@@ -34,6 +34,11 @@ const SCENARIOS: { name: string; code: string; budget: number }[] = [
     budget: 22_500,
   },
   {
+    name: 'QR en SVG (opcional)',
+    code: `export { qrSvg } from './dist/qr/render/index.js';`,
+    budget: 3_000,
+  },
+  {
     name: 'catálogo de errores (opcional)',
     code: `export * from './dist/errors.js';`,
     budget: 6_700,
