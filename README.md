@@ -4,7 +4,7 @@ Librería TypeScript para integrar **VERI\*FACTU** (Agencia Tributaria; RD 1007/
 HAC/1177/2024) en software de facturación: registros de alta y anulación, huella y
 encadenamiento, validación, XML, código QR y envío y consulta en el servicio web de la AEAT.
 
-- **Sin dependencias** en runtime y sin scripts de instalación. Núcleo de ~21 KB gzip.
+- **Sin dependencias** en runtime y sin scripts de instalación. Núcleo de ~22 KB gzip.
 - **Cualquier runtime** con Web Crypto: Node.js ≥ 22, Deno, Bun, navegadores y workers. El
   cliente de red está separado y su transporte se puede sustituir.
 - **Fiel a la especificación**: el XML se genera desde los XSD oficiales y se valida contra ellos
@@ -269,7 +269,7 @@ Medido con esbuild (minificado + gzip) sobre lo que se importa; se comprueba en 
 | ---------------------------------- | ------- |
 | Huella + URL del QR                | 1,3 KB  |
 | Crear y validar registros          | 9,6 KB  |
-| Cliente completo + transporte Node | 21,6 KB |
+| Cliente completo + transporte Node | 22,1 KB |
 | QR en SVG                          | 2,6 KB  |
 
 ## Hoja de ruta

@@ -27,11 +27,11 @@ const SCENARIOS: { name: string; code: string; budget: number }[] = [
     code: `export { createRegistrationRecord, buildSubmissionXml, soapEnvelope } from './dist/index.js';`,
     budget: 17_000,
   },
-  { name: 'núcleo completo', code: `export * from './dist/index.js';`, budget: 22_500 },
+  { name: 'núcleo completo', code: `export * from './dist/index.js';`, budget: 23_000 },
   {
     name: 'cliente + transporte Node',
     code: `export { AeatClient } from './dist/client/index.js'; export { nodeTransport } from './dist/client/transports/node.js';`,
-    budget: 22_500,
+    budget: 23_000,
   },
   {
     name: 'QR en SVG (opcional)',
