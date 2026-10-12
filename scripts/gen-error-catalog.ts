@@ -43,32 +43,41 @@ async function main(): Promise<void> {
     entries.push({ code, kind, description: m[2] ?? '' });
   }
 
-  const out =
+  const header =
     `// GENERADO AUTOMÁTICAMENTE por scripts/gen-error-catalog.ts a partir de spec/aeat/${id}/errores.properties.\n` +
-    `// No editar a mano: ejecutar \`npm run gen:errors\`.\n/* eslint-disable */\n` +
-    `import type { AeatErrorInfo } from '../errors.ts';\n\n` +
-    `export const AEAT_ERRORS: Readonly<Record<number, AeatErrorInfo>> = {\n` +
+    `// No editar a mano: ejecutar \`npm run gen:errors\`.\n/* eslint-disable */\n`;
+  const codes = (k: string) =>
     entries
-      .map(
-        (e) =>
-          `  ${e.code}: { kind: ${JSON.stringify(e.kind)}, description: ${JSON.stringify(e.description)} },`,
-      )
-      .join('\n') +
+      .filter((e) => e.kind === k)
+      .map((e) => e.code)
+      .join(',');
+  const kinds =
+    header +
+    `\n/** Códigos que rechazan el envío completo. */\nexport const SUBMISSION_REJECTION_CODES: readonly number[] = [${codes('rechazo-envio')}];\n` +
+    `\n/** Códigos que rechazan el registro. */\nexport const RECORD_REJECTION_CODES: readonly number[] = [${codes('rechazo-registro')}];\n` +
+    `\n/** Códigos de aceptación con errores (deben subsanarse). */\nexport const ADMISSIBLE_CODES: readonly number[] = [${codes('admisible')}];\n`;
+  const descriptions =
+    header +
+    `\n/** Descripción oficial de cada código de error de la AEAT. */\nexport const AEAT_ERROR_DESCRIPTIONS: Readonly<Record<number, string>> = {\n` +
+    entries.map((e) => `  ${e.code}: ${JSON.stringify(e.description)},`).join('\n') +
     `\n};\n`;
+  const outputs: [string, string][] = [
+    ['src/spec/generated/error-kinds.ts', kinds],
+    ['src/spec/generated/error-descriptions.ts', descriptions],
+  ];
 
-  const path = join(ROOT, 'src/spec/generated/errors.ts');
   if (check) {
-    const prev = await readFile(path, 'utf8').catch(() => '');
-    if (prev !== out) {
-      console.error(
-        '✗ src/spec/generated/errors.ts no coincide con errores.properties (ejecuta npm run gen:errors)',
-      );
-      process.exitCode = 1;
+    for (const [file, out] of outputs) {
+      const prev = await readFile(join(ROOT, file), 'utf8').catch(() => '');
+      if (prev !== out) {
+        console.error(`✗ ${file} no coincide con errores.properties (ejecuta npm run gen:errors)`);
+        process.exitCode = 1;
+      }
     }
     return;
   }
   await mkdir(join(ROOT, 'src/spec/generated'), { recursive: true });
-  await writeFile(path, out);
+  for (const [file, out] of outputs) await writeFile(join(ROOT, file), out);
   console.log(`Generados ${entries.length} códigos de error desde spec/aeat/${id}.`);
 }
 

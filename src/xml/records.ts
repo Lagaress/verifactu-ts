@@ -11,7 +11,8 @@ import type {
   RegistrationRecord,
 } from '../models/records.ts';
 import { SPEC_VERSION } from '../spec/version.ts';
-import { NAMESPACES } from './generated/schema.ts';
+import { NAMESPACES } from './generated/namespaces.ts';
+import { SF } from './generated/suministro-informacion.schema.ts';
 import type {
   CalificacionOperacionType,
   DetalleType,
@@ -352,8 +353,8 @@ export function recordToWire(
  */
 export function recordToXml(record: InvoiceRecord): string {
   return record.kind === 'registration'
-    ? writeElement('sf:RegistroAlta', registrationToWire(record))
-    : writeElement('sf:RegistroAnulacion', cancellationToWire(record));
+    ? writeElement(SF, 'sf:RegistroAlta', registrationToWire(record))
+    : writeElement(SF, 'sf:RegistroAnulacion', cancellationToWire(record));
 }
 
 /**
@@ -384,9 +385,9 @@ export function recordFromXml(xml: string): InvoiceRecord {
       'se esperaba un elemento RegistroAlta o RegistroAnulacion de SuministroInformacion.xsd',
     );
   }
-  const type = elementType(`sf:${root.local}`);
-  const wire = readWire(type, root, xml);
-  assertWire(type, wire, root.local);
+  const type = elementType(SF, `sf:${root.local}`);
+  const wire = readWire(SF, type, root, xml);
+  assertWire(SF, type, wire, root.local);
   return root.local === 'RegistroAlta'
     ? registrationFromWire(wire as RegistroFacturacionAltaType)
     : cancellationFromWire(wire as RegistroFacturacionAnulacionType);

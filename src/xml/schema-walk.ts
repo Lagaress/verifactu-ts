@@ -1,34 +1,34 @@
 import { XmlSchemaError } from '../common/errors.ts';
-import { SCHEMA } from './generated/schema.ts';
 import type {
   ComplexTypeDef,
   ElementParticle,
   Particle,
+  SchemaRegistry,
   SimpleTypeDef,
   TypeDef,
 } from './schema-types.ts';
 
 /** Busca la definición de un tipo `clave:Nombre`. Devuelve `undefined` para `xs:*` y `ds:Signature`. */
-export function typeDef(ref: string): TypeDef | undefined {
+export function typeDef(s: SchemaRegistry, ref: string): TypeDef | undefined {
   if (ref.startsWith('xs:') || ref === 'ds:Signature') return undefined;
-  const def = SCHEMA.types[ref];
+  const def = s.types[ref];
   if (!def) throw new Error(`Tipo de esquema desconocido: ${ref}`);
   return def;
 }
 
-export function isComplex(ref: string): boolean {
-  return typeDef(ref)?.kind === 'complex';
+export function isComplex(s: SchemaRegistry, ref: string): boolean {
+  return typeDef(s, ref)?.kind === 'complex';
 }
 
-export function complexDef(ref: string): ComplexTypeDef {
-  const def = typeDef(ref);
+export function complexDef(s: SchemaRegistry, ref: string): ComplexTypeDef {
+  const def = typeDef(s, ref);
   if (def?.kind !== 'complex') throw new Error(`Se esperaba un tipo complejo: ${ref}`);
   return def;
 }
 
 /** Tipo de un elemento global (`clave:Nombre`). */
-export function elementType(ref: string): string {
-  const t = SCHEMA.elements[ref];
+export function elementType(s: SchemaRegistry, ref: string): string {
+  const t = s.elements[ref];
   if (!t) throw new Error(`Elemento global desconocido: ${ref}`);
   return t;
 }
@@ -77,9 +77,9 @@ const XML_CHAR_RE = /^[\u0009\u000A\u000D -퟿-�\u{10000}-\u{10FFFF}]*$/u;
 /**
  * Comprueba un valor simple contra las facetas del XSD. Devuelve un mensaje de error o `undefined`.
  */
-export function checkSimple(ref: string, value: string): string | undefined {
+export function checkSimple(s: SchemaRegistry, ref: string, value: string): string | undefined {
   if (!XML_CHAR_RE.test(value)) return 'contiene caracteres no permitidos en XML';
-  const def = typeDef(ref) as SimpleTypeDef | undefined;
+  const def = typeDef(s, ref) as SimpleTypeDef | undefined;
   if (!def) return checkBuiltin(ref, value);
   // Las facetas de longitud del XSD cuentan caracteres (puntos de código), no unidades UTF-16.
   // eslint-disable-next-line @typescript-eslint/no-misused-spread
@@ -96,7 +96,9 @@ export function checkSimple(ref: string, value: string): string | undefined {
   if (def.enumeration && !def.enumeration.includes(value)) {
     return `valor no admitido (admitidos: ${def.enumeration.join(', ')})`;
   }
-  return def.base.startsWith('xs:') ? checkBuiltin(def.base, value) : checkSimple(def.base, value);
+  return def.base.startsWith('xs:')
+    ? checkBuiltin(def.base, value)
+    : checkSimple(s, def.base, value);
 }
 
 const DATETIME_RE = /^-?\d{4,}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/;
@@ -120,7 +122,7 @@ function checkBuiltin(ref: string, value: string): string | undefined {
  *
  * @throws XmlSchemaError en el primer incumplimiento.
  */
-export function assertWire(ref: string, value: unknown, path: string): void {
+export function assertWire(s: SchemaRegistry, ref: string, value: unknown, path: string): void {
   if (ref === 'ds:Signature') {
     if (
       typeof value !== 'object' ||
@@ -131,10 +133,10 @@ export function assertWire(ref: string, value: unknown, path: string): void {
     }
     return;
   }
-  const def = typeDef(ref);
+  const def = typeDef(s, ref);
   if (def?.kind !== 'complex') {
     if (typeof value !== 'string') throw new XmlSchemaError(path, 'se esperaba un valor de texto');
-    const problem = checkSimple(ref, value);
+    const problem = checkSimple(s, ref, value);
     if (problem) throw new XmlSchemaError(path, `${JSON.stringify(value)} ${problem}`);
     return;
   }
@@ -147,10 +149,11 @@ export function assertWire(ref: string, value: unknown, path: string): void {
     if (obj[key] !== undefined && !allowed.has(key))
       throw new XmlSchemaError(`${path}/${key}`, 'elemento no admitido por el esquema');
   }
-  assertParticles(def.content, obj, path);
+  assertParticles(s, def.content, obj, path);
 }
 
 function assertParticles(
+  s: SchemaRegistry,
   particles: readonly Particle[],
   obj: Record<string, unknown>,
   path: string,
@@ -164,7 +167,7 @@ function assertParticles(
       if (items.length > p.max)
         throw new XmlSchemaError(`${path}/${p.name}`, `máximo ${p.max} elementos`);
       items.forEach((item, i) => {
-        assertWire(p.type, item, p.max > 1 ? `${path}/${p.name}[${i}]` : `${path}/${p.name}`);
+        assertWire(s, p.type, item, p.max > 1 ? `${path}/${p.name}[${i}]` : `${path}/${p.name}`);
       });
     } else {
       const present = p.options.filter((opt) =>
@@ -185,7 +188,7 @@ function assertParticles(
           );
         continue;
       }
-      assertParticles(chosen, obj, path);
+      assertParticles(s, chosen, obj, path);
     }
   }
 }

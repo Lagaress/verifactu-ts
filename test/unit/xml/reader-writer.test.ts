@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { XmlParseError, XmlSchemaError } from '../../../src/index.ts';
 import { parseXml } from '../../../src/xml/reader.ts';
 import { escapeText, writeElement } from '../../../src/xml/writer.ts';
+import { SF } from '../../../src/xml/generated/suministro-informacion.schema.ts';
+import { SFLR } from '../../../src/xml/generated/suministro-lr.schema.ts';
+import { mergeSchemas } from '../../../src/xml/schema-decode.ts';
+
+const SCHEMA = mergeSchemas(SF, SFLR);
 import { xsdErrors } from '../../xsd/xsd.ts';
 
 describe('lector XML', () => {
@@ -47,17 +52,17 @@ describe('escritor XML', () => {
   const cabecera = { ObligadoEmision: { NombreRazon: 'X', NIF: 'A00000000' } };
 
   it('rechaza objetos que no cumplen el esquema', () => {
-    expect(() => writeElement('sfLR:RegFactuSistemaFacturacion', { Cabecera: cabecera })).toThrow(
-      XmlSchemaError,
-    );
     expect(() =>
-      writeElement('sfLR:RegFactuSistemaFacturacion', {
+      writeElement(SCHEMA, 'sfLR:RegFactuSistemaFacturacion', { Cabecera: cabecera }),
+    ).toThrow(XmlSchemaError);
+    expect(() =>
+      writeElement(SCHEMA, 'sfLR:RegFactuSistemaFacturacion', {
         Cabecera: { ...cabecera, Extra: '1' },
         RegistroFactura: [],
       }),
     ).toThrow(/Extra/);
     expect(() =>
-      writeElement('sfLR:RegFactuSistemaFacturacion', {
+      writeElement(SCHEMA, 'sfLR:RegFactuSistemaFacturacion', {
         Cabecera: { ObligadoEmision: { NombreRazon: 'X', NIF: 'CORTO' } },
         RegistroFactura: [{}],
       }),
@@ -66,7 +71,7 @@ describe('escritor XML', () => {
 
   it('rechaza caracteres no válidos en XML', () => {
     expect(() =>
-      writeElement('sfLR:RegFactuSistemaFacturacion', {
+      writeElement(SCHEMA, 'sfLR:RegFactuSistemaFacturacion', {
         Cabecera: { ObligadoEmision: { NombreRazon: 'X\u0001', NIF: 'A00000000' } },
         RegistroFactura: [],
       }),

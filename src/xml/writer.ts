@@ -1,11 +1,11 @@
 import { XmlSchemaError } from '../common/errors.ts';
-import { NAMESPACES } from './generated/schema.ts';
+import { NAMESPACES } from './generated/namespaces.ts';
 import type { RawXml } from './raw-xml.ts';
 import { assertWire, elementType, typeDef } from './schema-walk.ts';
-import type { Particle, SchemaKey } from './schema-types.ts';
+import type { Particle, SchemaKey, SchemaRegistry } from './schema-types.ts';
 
 /**
- * Serializador XML genérico dirigido por los metadatos del XSD (`src/xml/generated/schema.ts`):
+ * Serializador XML genérico dirigido por los metadatos del XSD (`src/xml/generated/*.schema.ts`):
  * el orden de los elementos y la cardinalidad salen del esquema, no del código.
  *
  * La salida es compacta (sin espacios entre elementos), en UTF-8 y con los namespaces declarados
@@ -51,16 +51,17 @@ export interface WriteOptions {
  * @throws XmlSchemaError si el objeto no se ajusta al esquema.
  */
 export function writeElement(
+  schema: SchemaRegistry,
   element: `${SchemaKey}:${string}`,
   value: unknown,
   options: WriteOptions = {},
 ): string {
-  const type = elementType(element);
+  const type = elementType(schema, element);
   const [ns, name] = element.split(':') as [SchemaKey, string];
-  if (options.validate ?? true) assertWire(type, value, name);
+  if (options.validate ?? true) assertWire(schema, type, value, name);
   const prefixes = { ...DEFAULT_PREFIXES, ...options.prefixes };
   const used = new Set<SchemaKey | 'ds'>();
-  const body = new Writer(prefixes, used).element(name, ns, type, value);
+  const body = new Writer(schema, prefixes, used).element(name, ns, type, value);
   // Declara los namespaces usados en el elemento raíz.
   const decls = [...used]
     .filter((k) => k !== 'ds')
@@ -71,10 +72,16 @@ export function writeElement(
 }
 
 class Writer {
+  private readonly schema: SchemaRegistry;
   private readonly prefixes: Readonly<Record<SchemaKey | 'ds', string>>;
   private readonly used: Set<SchemaKey | 'ds'>;
 
-  constructor(prefixes: Readonly<Record<SchemaKey | 'ds', string>>, used: Set<SchemaKey | 'ds'>) {
+  constructor(
+    schema: SchemaRegistry,
+    prefixes: Readonly<Record<SchemaKey | 'ds', string>>,
+    used: Set<SchemaKey | 'ds'>,
+  ) {
+    this.schema = schema;
     this.prefixes = prefixes;
     this.used = used;
   }
@@ -83,7 +90,7 @@ class Writer {
     if (type === 'ds:Signature') return (value as RawXml).raw;
     this.used.add(ns);
     const tag = `${this.prefixes[ns]}:${name}`;
-    const def = typeDef(type);
+    const def = typeDef(this.schema, type);
     if (def?.kind !== 'complex') {
       if (typeof value !== 'string')
         throw new XmlSchemaError(name, 'se esperaba un valor de texto');

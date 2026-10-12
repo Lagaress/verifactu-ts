@@ -1,7 +1,7 @@
 /**
  * Genera, a partir de los XSD oficiales de la AEAT (spec/current), los «tipos de cable»:
  *
- *  - src/xml/generated/schema.ts  → metadatos en runtime: orden de elementos, cardinalidad,
+ *  - src/xml/generated/<clave>.schema.ts → metadatos en runtime: orden de elementos, cardinalidad,
  *                                   namespaces y facetas (enumeraciones, patrones, longitudes).
  *  - src/xml/generated/<clave>.ts → tipos TypeScript que reflejan la estructura XML exacta.
  *
@@ -453,30 +453,78 @@ function emitTypes(m: SchemaModel): string {
   return `${head}\n/** Namespace: ${m.ns} */\n\n${body}`;
 }
 
-function emitRegistry(models: Map<SchemaKey, SchemaModel>): string {
-  const ser = (v: unknown): string =>
-    JSON.stringify(v, (k: string, x: unknown): unknown =>
-      k === 'doc' ? undefined : x === Infinity ? 'Infinity' : x,
-    );
-  let out = HEADER + `import type { SchemaRegistry } from '../schema-types.ts';\n\n`;
-  out += `export const NAMESPACES = {\n${[...models.values()].map((m) => `  ${m.key}: ${JSON.stringify(m.ns)},`).join('\n')}\n  ds: ${JSON.stringify(DS)},\n} as const;\n\n`;
-  out += `export const SCHEMA: SchemaRegistry = {\n  types: {\n`;
-  for (const m of models.values()) {
-    for (const [name, t] of m.types) {
-      const clean =
-        t.kind === 'simple' && t.enumeration
-          ? { ...t, enumeration: t.enumeration.map((e) => e.value) }
-          : t;
-      out += `    ${JSON.stringify(`${m.key}:${name}`)}: ${ser(clean).replace(/"Infinity"/g, 'Infinity')},\n`;
+/**
+ * Registro compacto: tuplas en lugar de objetos, valores por defecto omitidos, referencias del
+ * mismo esquema sin prefijo y listas de enumeración deduplicadas. `schema-decode.ts` lo expande una
+ * sola vez al cargar el módulo. Formato:
+ *
+ * - tipo complejo: lista de partículas;
+ * - elemento: `[nombre, tipo, min = 1, max = 1, ns = esquema del tipo contenedor]`;
+ * - choice: `{ c: [[partículas], …], m?: 0 }`;
+ * - tipo simple: `{ b?: base (xs:string), e?: enumeración, p?: patrones, l?, n?: minLength, x?: maxLength }`.
+ */
+function emitRegistry(m: SchemaModel): string {
+  const enumLists = new Map<string, { name: string; count: number }>();
+  for (const t of m.types.values()) {
+    if (t.kind !== 'simple' || !t.enumeration) continue;
+    const key = JSON.stringify(t.enumeration.map((e) => e.value));
+    const entry = enumLists.get(key);
+    if (entry) entry.count++;
+    else enumLists.set(key, { name: `E${enumLists.size}`, count: 1 });
+  }
+  const shared = [...enumLists].filter(([, v]) => v.count > 1);
+
+  const ref = (r: string, owner: SchemaKey): string =>
+    r.startsWith(`${owner}:`) ? r.slice(owner.length + 1) : r;
+  const particle = (pt: Particle, owner: SchemaKey): string => {
+    if (pt.kind === 'choice') {
+      const opts = pt.options
+        .map((o) => `[${o.map((x) => particle(x, owner)).join(',')}]`)
+        .join(',');
+      return `{c:[${opts}]${pt.min === 0 ? ',m:0' : ''}}`;
     }
+    const parts: string[] = [JSON.stringify(pt.name), JSON.stringify(ref(pt.type, owner))];
+    const max = pt.max === Infinity ? 'Infinity' : String(pt.max);
+    if (pt.ns !== owner) parts.push(String(pt.min), max, JSON.stringify(pt.ns));
+    else if (pt.max !== 1) parts.push(String(pt.min), max);
+    else if (pt.min !== 1) parts.push(String(pt.min));
+    return `[${parts.join(',')}]`;
+  };
+  const simple = (s: SimpleType): string => {
+    const f: string[] = [];
+    if (s.base !== 'xs:string') f.push(`b:${JSON.stringify(s.base)}`);
+    if (s.enumeration) {
+      const key = JSON.stringify(s.enumeration.map((e) => e.value));
+      const e = enumLists.get(key);
+      f.push(`e:${e && e.count > 1 ? e.name : key}`);
+    }
+    if (s.pattern) f.push(`p:${JSON.stringify(s.pattern)}`);
+    if (s.length !== undefined) f.push(`l:${s.length}`);
+    if (s.minLength !== undefined) f.push(`n:${s.minLength}`);
+    if (s.maxLength !== undefined) f.push(`x:${s.maxLength}`);
+    return `{${f.join(',')}}`;
+  };
+
+  let out = HEADER + `import { decodeSchema } from '../schema-decode.ts';\n\n`;
+  for (const [key, v] of shared) out += `const ${v.name} = ${key};\n`;
+  const file = SCHEMAS.find((s) => s.key === m.key)?.file ?? m.key;
+  out += `\n/** Metadatos de ${file}. */\n`;
+  out += `export const ${m.key.toUpperCase()} = /* @__PURE__ */ decodeSchema(${JSON.stringify(m.key)}, {\n`;
+  for (const [name, t] of m.types) {
+    const body =
+      t.kind === 'simple' ? simple(t) : `[${t.content.map((x) => particle(x, m.key)).join(',')}]`;
+    out += `  ${JSON.stringify(name)}: ${body},\n`;
   }
-  out += `  },\n  elements: {\n`;
-  for (const m of models.values()) {
-    for (const [name, type] of m.elements)
-      out += `    ${JSON.stringify(`${m.key}:${name}`)}: ${JSON.stringify(type)},\n`;
-  }
-  out += `  },\n};\n`;
+  const elements = [...m.elements].map(
+    ([n, ty]) => `${JSON.stringify(n)}:${JSON.stringify(ref(ty, m.key))}`,
+  );
+  out += `}, {${elements.join(',')}});\n`;
   return out;
+}
+
+function emitNamespaces(models: Map<SchemaKey, SchemaModel>): string {
+  const lines = [...models.values()].map((m) => `  ${m.key}: ${JSON.stringify(m.ns)},`);
+  return `${HEADER}\nexport const NAMESPACES = {\n${lines.join('\n')}\n  ds: ${JSON.stringify(DS)},\n} as const;\n`;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -499,8 +547,11 @@ async function main(): Promise<void> {
   resolve(models);
 
   const outputs = new Map<string, string>();
-  outputs.set('schema.ts', emitRegistry(models));
-  for (const m of models.values()) outputs.set(`${m.module}.ts`, emitTypes(m));
+  outputs.set('namespaces.ts', emitNamespaces(models));
+  for (const m of models.values()) {
+    outputs.set(`${m.module}.ts`, emitTypes(m));
+    outputs.set(`${m.module}.schema.ts`, emitRegistry(m));
+  }
 
   await mkdir(OUT, { recursive: true });
   let stale = false;

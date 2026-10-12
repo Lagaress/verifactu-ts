@@ -4,7 +4,12 @@ import type { InvoiceRecord } from '../models/records.ts';
 import type { CabeceraType } from './generated/suministro-informacion.ts';
 import type { RegFactuSistemaFacturacionType } from './generated/suministro-lr.ts';
 import { cancellationToWire, registrationToWire } from './records.ts';
+import { SF } from './generated/suministro-informacion.schema.ts';
+import { SFLR } from './generated/suministro-lr.schema.ts';
+import { mergeSchemas } from './schema-decode.ts';
 import { writeElement } from './writer.ts';
+
+const SUBMISSION_SCHEMA = /* @__PURE__ */ mergeSchemas(SF, SFLR);
 
 export const SOAP_ENV_NS = 'http://schemas.xmlsoap.org/soap/envelope/';
 
@@ -74,7 +79,11 @@ export function submissionToWire(
  * @throws XmlSchemaError si no se ajusta al esquema (p. ej. más de 1000 registros).
  */
 export function buildSubmissionXml(h: SubmissionHeader, records: readonly InvoiceRecord[]): string {
-  return writeElement('sfLR:RegFactuSistemaFacturacion', submissionToWire(h, records));
+  return writeElement(
+    SUBMISSION_SCHEMA,
+    'sfLR:RegFactuSistemaFacturacion',
+    submissionToWire(h, records),
+  );
 }
 
 /** Envuelve un cuerpo XML en un sobre SOAP 1.1. */

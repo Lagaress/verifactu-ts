@@ -1,7 +1,7 @@
 import { XmlParseError, XmlSchemaError } from '../common/errors.ts';
-import { NAMESPACES } from './generated/schema.ts';
+import { NAMESPACES } from './generated/namespaces.ts';
 import { typeDef } from './schema-walk.ts';
-import type { Particle, SchemaKey } from './schema-types.ts';
+import type { Particle, SchemaKey, SchemaRegistry } from './schema-types.ts';
 
 /**
  * Lector XML mínimo y endurecido, sin dependencias.
@@ -256,13 +256,14 @@ export interface ReadOptions {
  * fragmento XML opaco ({@link RawXml}) extraído de `source`.
  */
 export function readWire(
+  schema: SchemaRegistry,
   type: string,
   el: XmlElement,
   source: string,
   options: ReadOptions = {},
   path = el.local,
 ): unknown {
-  const def = typeDef(type);
+  const def = typeDef(schema, type);
   if (type === 'ds:Signature') return { raw: source.slice(el.start, el.end) };
   if (def?.kind !== 'complex') {
     if (el.children.length > 0) throw new XmlSchemaError(path, 'se esperaba un valor de texto');
@@ -277,7 +278,7 @@ export function readWire(
       if (options.unknownElements === 'ignore') continue;
       throw new XmlSchemaError(`${path}/${child.local}`, 'elemento no admitido por el esquema');
     }
-    const value = readWire(particle.type, child, source, options, `${path}/${child.local}`);
+    const value = readWire(schema, particle.type, child, source, options, `${path}/${child.local}`);
     if (particle.max > 1) {
       const list = (out[child.local] ??= []) as unknown[];
       list.push(value);
