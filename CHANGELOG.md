@@ -17,3 +17,4 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Transportes `node:https` (`verifactu-ts/transport/node`) y `fetch` (Deno, Bun, undici).
 - AEAT simulada para tests (`verifactu-ts/testing`).
 - Catálogo de errores de la AEAT (`verifactu-ts/errors`).
+- Experimental: firma XAdES-EPES de registros y registros de evento (`verifactu-ts/no-verifactu`).

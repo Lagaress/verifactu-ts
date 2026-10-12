@@ -31,7 +31,8 @@
       "verifactu-ts/transport/node": ["./src/client/transports/node.ts"],
       "verifactu-ts/qr/render": ["./src/qr/render/index.ts"],
       "verifactu-ts/testing": ["./src/testing/index.ts"],
-      "verifactu-ts/errors": ["./src/errors.ts"]
+      "verifactu-ts/errors": ["./src/errors.ts"],
+      "verifactu-ts/no-verifactu": ["./src/no-verifactu.ts"]
     }
   },
   "include": ["src", "test", "scripts", "examples", "*.config.ts"],

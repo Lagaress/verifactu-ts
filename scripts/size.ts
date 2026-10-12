@@ -39,6 +39,11 @@ const SCENARIOS: { name: string; code: string; budget: number }[] = [
     budget: 3_000,
   },
   {
+    name: 'NO VERI*FACTU: firma + eventos',
+    code: `export * from './dist/no-verifactu.js';`,
+    budget: 16_000,
+  },
+  {
     name: 'catálogo de errores (opcional)',
     code: `export * from './dist/errors.js';`,
     budget: 6_700,

@@ -74,3 +74,29 @@ Verifactu-PHP, se sigue a la AEAT y se anota en [PHP-CORRESPONDENCE.md](./PHP-CO
 
 - Que el servicio de cotejo acepte `+` como espacio en `numserie` (D7).
 - Mensajes reales de SOAP Fault y de `RegistroDuplicado` (los fixtures actuales siguen el XSD).
+
+## NO VERI\*FACTU: firma XAdES y eventos
+
+- **Forma de la firma.** Se reproduce la estructura del ejemplo oficial
+  `ejemploRegistro-firmado-epes-xades4j.xml` (Especificación de firma v0.1.5): XAdES-EPES
+  Enveloped, `Reference URI=""` con `enveloped-signature`, C14N 1.0 inclusiva, RSA-SHA256, digest
+  SHA-256, política AGE `urn:oid:2.16.724.1.3.1.1.2.1.9` con su hash SHA-1 publicado
+  (`G7roucf600+f03r/o0bAOQ6WAs0=`), `SigningCertificate` con `CertDigest` SHA-1 e `IssuerSerial`
+  (como el ejemplo) y `DataObjectFormat`.
+- **Verificación.** Los tests reconstruyen con el mismo código el `SignedInfo` del ejemplo oficial
+  y verifican su `SignatureValue` con la clave pública de su certificado. Las firmas propias se
+  verifican con la C14N de libxml2.
+- **`SigningTime`** se escribe en UTC (`…Z`), un `xs:dateTime` válido.
+- **Contexto de los namespaces.** La firma cubre el registro como documento independiente, como
+  en el ejemplo oficial. Con C14N inclusiva, si un verificador canonicaliza el registro _dentro_
+  del sobre SOAP del requerimiento, los namespaces heredados (`soapenv`, `sum`) cambiarían el
+  resultado. La documentación no aclara cómo valida la AEAT los registros recibidos por
+  requerimiento. **Pendiente de contrastar** cuando el servicio de requerimiento esté disponible en
+  el entorno de pruebas. El servicio de validación NO VERI\*FACTU solo admite registros sin firmar.
+- **Claves.** Web Crypto no lee PKCS#12 ni PKCS#8 cifrado. `loadPemCredentials` acepta PEM sin
+  cifrar (PKCS#8 o PKCS#1) e indica cómo convertir con `openssl`. Se evita así añadir dependencias.
+- **Países en eventos.** La lista `CountryType2` de `EventosSIF.xsd` no incluye `RE` (Reunión),
+  que sí admite `SuministroInformacion.xsd`. Un evento con ese país lanza `InvalidArgumentError`.
+- **Huella de eventos.** No hay ejemplo oficial. Se sigue la §3.c de la especificación de huella
+  (`NIF=…&ID=…&IdSistemaInformatico=…`), con `NIF` o `ID` vacío según cómo se identifique el
+  productor.

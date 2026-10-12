@@ -13,6 +13,7 @@ export default defineConfig({
       { find: /^verifactu-ts\/qr\/render$/, replacement: src('qr/render/index.ts') },
       { find: /^verifactu-ts\/testing$/, replacement: src('testing/index.ts') },
       { find: /^verifactu-ts\/errors$/, replacement: src('errors.ts') },
+      { find: /^verifactu-ts\/no-verifactu$/, replacement: src('no-verifactu.ts') },
     ],
   },
   test: {

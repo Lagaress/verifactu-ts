@@ -52,9 +52,10 @@ especificación están en [docs/SPEC-NOTES.md](./docs/SPEC-NOTES.md).
 | URL del QR y QR en SVG                                       | Maquetar la factura                                                          |
 | AEAT simulada para tests                                     | —                                                                            |
 
-**Modalidad NO VERI\*FACTU**: todavía no. Requiere firma XAdES de cada registro y el registro de
-eventos firmado; está prevista en la hoja de ruta. El cliente ya admite el servicio de
-requerimiento (`service: 'requirement'`) y el QR la URL `ValidarQRNoVerifactu`.
+**Modalidad NO VERI\*FACTU** (`verifactu-ts/no-verifactu`, experimental). Incluye la firma
+XAdES-EPES de los registros y los registros de evento firmados y encadenados. El envío por
+requerimiento se hace con `client.send(records, { service: 'requirement', requirement })`. La
+detección de anomalías y la conservación de los registros corresponden al SIF.
 
 ## Instalación
 
@@ -202,7 +203,39 @@ for await (const r of client.query({ year: 2025, month: 6 })) {
 }
 ```
 
-### 6. Probar sin certificado
+### 6. NO VERI\*FACTU: firma y eventos
+
+```ts
+import {
+  createEventRecord,
+  EventType,
+  loadPemCredentials,
+  signRecord,
+  toEventChainLink,
+} from 'verifactu-ts/no-verifactu';
+
+// PEM sin cifrar; desde un PKCS#12: openssl pkcs12 -in cert.p12 -nodes -out cert.pem
+const credentials = await loadPemCredentials({ key: pemClave, certificates: pemCertificados });
+
+const signed = await signRecord(record, credentials); // XAdES-EPES; la huella no cambia
+const event = await createEventRecord(
+  {
+    system,
+    taxpayer,
+    eventType: EventType.StartNoVerifactu,
+    previous: ultimoEvento,
+    generatedAt: new Date(),
+  },
+  credentials,
+);
+await guardar(event, toEventChainLink(event));
+```
+
+La firma reproduce la estructura del ejemplo oficial de la AEAT, y los tests verifican la firma de
+ese ejemplo con el mismo código. Antes de usarla en producción, consulta las notas pendientes de
+contrastar en [docs/SPEC-NOTES.md](./docs/SPEC-NOTES.md#no-verifactu-firma-xades-y-eventos).
+
+### 7. Probar sin certificado
 
 ```ts
 import { createFakeAeat } from 'verifactu-ts/testing';
@@ -237,7 +270,8 @@ Medido con esbuild (minificado + gzip) sobre lo que se importa; se comprueba en 
 ## Hoja de ruta
 
 1. ✅ VERI\*FACTU: registros, huella, validación, XML, QR, envío y consulta.
-2. ⏳ NO VERI\*FACTU: firma XAdES-EPES de registros y registro de eventos.
+2. 🧪 NO VERI\*FACTU: firma XAdES-EPES y registros de evento (experimental, pendiente de
+   contrastar con el servicio de requerimiento de la AEAT).
 3. ⏳ Factura electrónica B2B (Orden HAC/1028/2026): UBL según EN 16931 y envío a la solución
    pública de la AEAT, cuando se publiquen las especificaciones técnicas.
 

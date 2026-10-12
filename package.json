@@ -53,6 +53,10 @@
       "types": "./dist/qr/render/index.d.ts",
       "default": "./dist/qr/render/index.js"
     },
+    "./no-verifactu": {
+      "types": "./dist/no-verifactu.d.ts",
+      "default": "./dist/no-verifactu.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
