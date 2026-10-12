@@ -29,6 +29,11 @@ const SCENARIOS: { name: string; code: string; budget: number }[] = [
   },
   { name: 'núcleo completo', code: `export * from './dist/index.js';`, budget: 22_500 },
   {
+    name: 'cliente + transporte Node',
+    code: `export { AeatClient } from './dist/client/index.js'; export { nodeTransport } from './dist/client/transports/node.js';`,
+    budget: 22_500,
+  },
+  {
     name: 'catálogo de errores (opcional)',
     code: `export * from './dist/errors.js';`,
     budget: 6_700,
@@ -46,6 +51,7 @@ for (const s of SCENARIOS) {
     write: false,
     treeShaking: true,
     metafile: true,
+    external: ['node:*'],
   });
   const bytes = result.outputFiles[0]!.contents;
   const gz = gzipSync(bytes, { level: 9 }).length;
