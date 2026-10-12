@@ -3,7 +3,10 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones según
 [SemVer](https://semver.org/lang/es/). Cada versión indica la especificación de la AEAT soportada.
 
-## [Sin publicar]
+## [0.5.0] - 2026-10-12
+
+Primera versión publicada. Empieza en 0.5.0 porque el nombre `verifactu-ts` lo usó antes otro
+proyecto, ya despublicado, con las versiones 0.1.0–0.4.0, y npm no permite reutilizarlas.
 
 ### Añadido
 

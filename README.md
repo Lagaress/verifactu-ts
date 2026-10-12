@@ -1,27 +1,61 @@
-# verifactu-ts
+# verifactu-ts — VERI\*FACTU para TypeScript y Node.js
 
-Librería TypeScript para integrar **VERI\*FACTU** (Agencia Tributaria; RD 1007/2023 y Orden
-HAC/1177/2024) en software de facturación: registros de alta y anulación, huella y
-encadenamiento, validación, XML, código QR y envío y consulta en el servicio web de la AEAT.
+[![npm](https://img.shields.io/npm/v/verifactu-ts?label=npm)](https://www.npmjs.com/package/verifactu-ts)
+[![CI](https://github.com/Lagaress/verifactu-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/Lagaress/verifactu-ts/actions/workflows/ci.yml)
+[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue)](./LICENSE)
+[![Sin dependencias](https://img.shields.io/badge/dependencias-0-brightgreen)](./package.json)
+[![Tipos incluidos](https://img.shields.io/badge/tipos-TypeScript-3178c6)](./src/index.ts)
 
-- **Sin dependencias** en runtime y sin scripts de instalación. Núcleo de ~22 KB gzip.
-- **Cualquier runtime** con Web Crypto: Node.js ≥ 22, Deno, Bun, navegadores y workers. El
-  cliente de red está separado y su transporte se puede sustituir.
-- **Fiel a la especificación**: el XML se genera desde los XSD oficiales y se valida contra ellos
-  en los tests; más de 90 reglas de negocio con el código de error de la AEAT.
+Librería **open source** para integrar **VERI\*FACTU** (Agencia Tributaria, AEAT; Real Decreto
+1007/2023, Orden HAC/1177/2024, «Ley Antifraude») en cualquier software de facturación hecho en
+JavaScript o TypeScript. Genera los **registros de facturación** de alta y anulación, calcula la
+**huella (hash SHA-256)** y el encadenamiento, valida con las reglas oficiales, produce el **XML**
+y el **código QR** de cotejo, y **envía y consulta** los registros en el servicio web de la AEAT
+con certificado electrónico. Incluye la **firma XAdES** y los registros de evento de la modalidad
+NO VERI\*FACTU.
+
+- **Sin dependencias** en runtime y sin scripts de instalación. El núcleo ocupa unos 22 KB gzip.
+- **Cualquier runtime** con Web Crypto: Node.js ≥ 22, Deno, Bun, navegadores y workers.
+- **Fiel a la especificación**: el XML se genera a partir de los XSD oficiales y se valida contra
+  ellos en los tests. Incluye más de 90 reglas de negocio con su código de error de la AEAT y
+  reproduce los ejemplos oficiales de huella y de firma.
 - TypeScript estricto, ESM, errores tipados y mensajes en español.
 
-> [!IMPORTANT]
-> **Aviso legal.** Esta librería **no es un Sistema Informático de Facturación (SIF)** y se
+```sh
+npm install verifactu-ts
+```
+
+> **⚠️ Aviso legal.** Esta librería **no es un Sistema Informático de Facturación (SIF)** y se
 > ofrece **sin declaración responsable**. Quien la integre en su software es responsable de
 > auditarla, de cumplir la normativa aplicable y de emitir su propia declaración responsable.
 > Se distribuye «tal cual», sin garantías (licencia MIT).
 
-**English summary.** TypeScript library for Spain's VERI\*FACTU e-invoicing records (AEAT): typed
-record models, SHA-256 hash chaining, validation against the official rules, XML generated from the
-official XSDs, QR codes, and a SOAP client for submitting and querying records. Zero runtime
-dependencies, ESM, runs on Node ≥ 22, Deno, Bun and browsers. It is a building block, **not** a
-certified invoicing system. Messages and docs are in Spanish.
+<details>
+<summary><strong>English</strong></summary>
+
+**verifactu-ts** is a zero-dependency TypeScript library for **Spain's VERI\*FACTU** invoicing
+system (AEAT, the Spanish Tax Agency; Royal Decree 1007/2023). It covers:
+
+- typed models for invoice records (registration and cancellation);
+- SHA-256 hash chaining;
+- validation against the official AEAT rules;
+- XML generated from the official XSD schemas;
+- verification QR codes;
+- a SOAP client (mutual TLS with the taxpayer's certificate) to submit and query records;
+- XAdES-EPES signatures and event records for the NO VERI\*FACTU mode.
+
+It runs on Node.js ≥ 22, Deno, Bun and browsers. It is a building block for invoicing software,
+**not** a certified invoicing system (SIF): integrators remain responsible for compliance. The API
+uses English identifiers. Documentation and error messages are in Spanish.
+
+```ts
+import { createRegistrationRecord, qrUrl } from 'verifactu-ts';
+
+const record = await createRegistrationRecord({/* invoice data */});
+const url = qrUrl(record, { environment: 'production', mode: 'verifactu' });
+```
+
+</details>
 
 ## Especificación soportada
 

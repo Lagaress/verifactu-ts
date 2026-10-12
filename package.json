@@ -1,20 +1,43 @@
 {
   "name": "verifactu-ts",
-  "version": "0.0.0",
-  "description": "Librería TypeScript para VERI*FACTU (AEAT): registros de facturación, huella, QR y envío SOAP. Sin dependencias nativas.",
+  "version": "0.5.0",
+  "description": "VERI*FACTU (AEAT) para TypeScript y Node.js: registros de facturación, huella SHA-256, QR, firma XAdES y envío SOAP a la Agencia Tributaria. Sin dependencias · Spain VeriFactu library",
   "keywords": [
     "verifactu",
+    "veri-factu",
     "veri*factu",
     "aeat",
+    "agencia-tributaria",
+    "hacienda",
     "sif",
+    "sistema-informatico-de-facturacion",
     "facturacion",
     "factura",
-    "hacienda",
+    "factura-electronica",
+    "ley-antifraude",
+    "rd-1007-2023",
+    "hac-1177-2024",
+    "huella",
+    "hash",
     "qr",
-    "typescript"
+    "xades",
+    "soap",
+    "iva",
+    "igic",
+    "ipsi",
+    "spain",
+    "espana",
+    "e-invoicing",
+    "invoice",
+    "tax",
+    "typescript",
+    "zero-dependency"
   ],
   "license": "MIT",
-  "author": "Jesús Lagares",
+  "author": {
+    "name": "Jesús Lagares",
+    "url": "https://github.com/Lagaress"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Lagaress/verifactu-ts.git"
