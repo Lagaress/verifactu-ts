@@ -271,6 +271,7 @@ Medido con esbuild (minificado + gzip) sobre lo que se importa; se comprueba en 
 | Crear y validar registros          | 9,6 KB  |
 | Cliente completo + transporte Node | 22,1 KB |
 | QR en SVG                          | 2,6 KB  |
+| NO VERI\*FACTU (firma + eventos)   | 15,3 KB |
 
 ## Hoja de ruta
 
