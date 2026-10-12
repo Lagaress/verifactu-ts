@@ -1,0 +1,124 @@
+{
+  "$comment": "Vectores de huella. 'aeat-*': ejemplos oficiales de las «Especificaciones técnicas para la generación de la huella o hash» v0.1.2 y del ejemplo de firma v0.1.5. 'php-*': tests de josemmo/Verifactu-PHP v0.3.4 (MIT).",
+  "registration": [
+    {
+      "id": "aeat-huella-alta-1",
+      "source": "Especificación de huella v0.1.2, ejemplo de primer registro de alta",
+      "fields": {
+        "IDEmisorFactura": "89890001K",
+        "NumSerieFactura": "12345678/G33",
+        "FechaExpedicionFactura": "01-01-2024",
+        "TipoFactura": "F1",
+        "CuotaTotal": "12.35",
+        "ImporteTotal": "123.45",
+        "Huella": "",
+        "FechaHoraHusoGenRegistro": "2024-01-01T19:20:30+01:00"
+      },
+      "input": "IDEmisorFactura=89890001K&NumSerieFactura=12345678/G33&FechaExpedicionFactura=01-01-2024&TipoFactura=F1&CuotaTotal=12.35&ImporteTotal=123.45&Huella=&FechaHoraHusoGenRegistro=2024-01-01T19:20:30+01:00",
+      "hash": "3C464DAF61ACB827C65FDA19F352A4E3BDC2C640E9E9FC4CC058073F38F12F60"
+    },
+    {
+      "id": "aeat-huella-alta-2",
+      "source": "Especificación de huella v0.1.2, ejemplo de registro de alta encadenado",
+      "fields": {
+        "IDEmisorFactura": "89890001K",
+        "NumSerieFactura": "12345679/G34",
+        "FechaExpedicionFactura": "01-01-2024",
+        "TipoFactura": "F1",
+        "CuotaTotal": "12.35",
+        "ImporteTotal": "123.45",
+        "Huella": "3C464DAF61ACB827C65FDA19F352A4E3BDC2C640E9E9FC4CC058073F38F12F60",
+        "FechaHoraHusoGenRegistro": "2024-01-01T19:20:35+01:00"
+      },
+      "input": "IDEmisorFactura=89890001K&NumSerieFactura=12345679/G34&FechaExpedicionFactura=01-01-2024&TipoFactura=F1&CuotaTotal=12.35&ImporteTotal=123.45&Huella=3C464DAF61ACB827C65FDA19F352A4E3BDC2C640E9E9FC4CC058073F38F12F60&FechaHoraHusoGenRegistro=2024-01-01T19:20:35+01:00",
+      "hash": "F7B94CFD8924EDFF273501B01EE5153E4CE8F259766F88CF6ACB8935802A2B97"
+    },
+    {
+      "id": "aeat-firma-ejemplo-r3",
+      "source": "Ejemplos de firma v0.1.5 (ejemploRegistro.xml): importes con un decimal",
+      "fields": {
+        "IDEmisorFactura": "89890001K",
+        "NumSerieFactura": "12345678-G66",
+        "FechaExpedicionFactura": "03-02-2025",
+        "TipoFactura": "R3",
+        "CuotaTotal": "41.4",
+        "ImporteTotal": "241.4",
+        "Huella": "C9AF4AF1EF5EBBA700350DE3EEF12C2D355C56AC56F13DB2A25E0031BD2B7ED5",
+        "FechaHoraHusoGenRegistro": "2025-02-03T14:30:00+01:00"
+      },
+      "hash": "FF954378B64ED331A9B2366AD317D86E9DEC1716B12DD0ACCB172A6DC4C105AA"
+    },
+    {
+      "id": "php-f2-primer-registro",
+      "source": "Verifactu-PHP tests/Models/Records/RegistrationRecordTest.php",
+      "fields": {
+        "IDEmisorFactura": "A00000000",
+        "NumSerieFactura": "PRUEBA-0001",
+        "FechaExpedicionFactura": "01-06-2025",
+        "TipoFactura": "F2",
+        "CuotaTotal": "2.10",
+        "ImporteTotal": "12.10",
+        "Huella": "",
+        "FechaHoraHusoGenRegistro": "2025-06-01T10:20:30+02:00"
+      },
+      "hash": "F223F0A84F7D0C701C13C97CF10A1628FF9E46A003DDAEF3A804FBD799D82070"
+    },
+    {
+      "id": "php-f2-encadenado",
+      "source": "Verifactu-PHP tests/Models/Records/RegistrationRecordTest.php",
+      "fields": {
+        "IDEmisorFactura": "A00000000",
+        "NumSerieFactura": "PRUEBA-0002",
+        "FechaExpedicionFactura": "02-06-2025",
+        "TipoFactura": "F2",
+        "CuotaTotal": "21.00",
+        "ImporteTotal": "121.00",
+        "Huella": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "FechaHoraHusoGenRegistro": "2025-06-02T20:30:40+02:00"
+      },
+      "hash": "4566062C5A5D7DA4E0E876C0994071CD807962629F8D3C1F33B91EDAA65B2BA1"
+    },
+    {
+      "id": "php-fixture-f1",
+      "source": "Verifactu-PHP tests/Models/Records/registration-record-f1.xml",
+      "fields": {
+        "IDEmisorFactura": "00000000B",
+        "NumSerieFactura": "PRUEBA-0002",
+        "FechaExpedicionFactura": "02-06-2025",
+        "TipoFactura": "F1",
+        "CuotaTotal": "26.00",
+        "ImporteTotal": "176.00",
+        "Huella": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "FechaHoraHusoGenRegistro": "2025-06-02T11:22:33+02:00"
+      },
+      "hash": "8B042C064EE8260DE86766B4C4878DD1347377D00C7D7C97043E126B1215F2A6"
+    }
+  ],
+  "cancellation": [
+    {
+      "id": "aeat-huella-anulacion",
+      "source": "Especificación de huella v0.1.2, ejemplo de registro de anulación",
+      "fields": {
+        "IDEmisorFacturaAnulada": "89890001K",
+        "NumSerieFacturaAnulada": "12345679/G34",
+        "FechaExpedicionFacturaAnulada": "01-01-2024",
+        "Huella": "F7B94CFD8924EDFF273501B01EE5153E4CE8F259766F88CF6ACB8935802A2B97",
+        "FechaHoraHusoGenRegistro": "2024-01-01T19:20:40+01:00"
+      },
+      "input": "IDEmisorFacturaAnulada=89890001K&NumSerieFacturaAnulada=12345679/G34&FechaExpedicionFacturaAnulada=01-01-2024&Huella=F7B94CFD8924EDFF273501B01EE5153E4CE8F259766F88CF6ACB8935802A2B97&FechaHoraHusoGenRegistro=2024-01-01T19:20:40+01:00",
+      "hash": "177547C0D57AC74748561D054A9CEC14B4C4EA23D1BEFD6F2E69E3A388F90C68"
+    },
+    {
+      "id": "php-fixture-anulacion",
+      "source": "Verifactu-PHP tests/Models/Records/cancellation-record.xml",
+      "fields": {
+        "IDEmisorFacturaAnulada": "A00000000",
+        "NumSerieFacturaAnulada": "12345679/G34",
+        "FechaExpedicionFacturaAnulada": "01-01-2024",
+        "Huella": "F7B94CFD8924EDFF273501B01EE5153E4CE8F259766F88CF6ACB8935802A2B97",
+        "FechaHoraHusoGenRegistro": "2024-01-01T19:20:40+01:00"
+      },
+      "hash": "5DCAFD630E24AA03BCE2D3E6F595BAE802555F4604AF830F0340F3338B4935F6"
+    }
+  ]
+}
