@@ -1,0 +1,150 @@
+{
+  "id": "2026-10-12",
+  "retrievedAt": "2026-10-12T13:22:21.139Z",
+  "source": "Agencia Estatal de Administración Tributaria (https://sede.agenciatributaria.gob.es). Reutilización conforme al aviso legal de la Sede: se cita la fuente y la fecha de actualización (lastModified).",
+  "files": [
+    {
+      "path": "xsd/SuministroLR.xsd",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SuministroLR.xsd",
+      "sha256": "26bacfc6229d1a314758753244219ba207b2dcc8e2a22f7ab60b8ab6bae877e1",
+      "lastModified": "Wed, 01 Oct 2025 08:07:24 GMT"
+    },
+    {
+      "path": "xsd/SuministroInformacion.xsd",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SuministroInformacion.xsd",
+      "sha256": "ee4c1655175644de44c4c25055ffeb8e5f4bb4bc3834ce8254d4222ef18c8aa1",
+      "lastModified": "Sun, 11 Jan 2026 23:01:15 GMT"
+    },
+    {
+      "path": "xsd/RespuestaSuministro.xsd",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/RespuestaSuministro.xsd",
+      "sha256": "82acf80f785643caac13087aae66808ed721a13f08ca5218cf8ae81b695549ef",
+      "lastModified": "Wed, 01 Oct 2025 08:07:24 GMT"
+    },
+    {
+      "path": "xsd/ConsultaLR.xsd",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/ConsultaLR.xsd",
+      "sha256": "bf2cdb8fc4b95b291757a72b76d8fffca06a6d30d9329122ca2fd6b2d5f8f1b1",
+      "lastModified": "Mon, 13 Oct 2025 12:20:35 GMT"
+    },
+    {
+      "path": "xsd/RespuestaConsultaLR.xsd",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/RespuestaConsultaLR.xsd",
+      "sha256": "de35063acb8d9ba0d6ae51acc6b595de9c2b12333250e95e13108ef5f2670d45",
+      "lastModified": "Wed, 01 Oct 2025 08:07:24 GMT"
+    },
+    {
+      "path": "xsd/EventosSIF.xsd",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/EventosSIF.xsd",
+      "sha256": "241ce3fa3f01dc81a4495692b92152c48c0760e46de31f06551225270133ae54",
+      "lastModified": "Wed, 01 Oct 2025 08:07:24 GMT"
+    },
+    {
+      "path": "xsd/RespuestaValRegistNoVeriFactu.xsd",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/RespuestaValRegistNoVeriFactu.xsd",
+      "sha256": "8f47af4f3c49d29b6a62aed261c09f171e855ad6d6bb72ef3fc0b147dc9572f0",
+      "lastModified": "Wed, 01 Oct 2025 08:07:24 GMT"
+    },
+    {
+      "path": "wsdl/SistemaFacturacion.wsdl",
+      "url": "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SistemaFacturacion.wsdl",
+      "sha256": "05919120708ff7650612fa6683c9336eaf919335d9a4db10e86759190af48602",
+      "lastModified": "Wed, 01 Oct 2025 08:07:24 GMT"
+    },
+    {
+      "path": "errores.properties",
+      "url": "https://prewww2.aeat.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/errores.properties",
+      "sha256": "06519ceb23422bd6b0ad3bfb659e3007615050da4920781d12cff536481d5902",
+      "lastModified": "Thu, 30 Jul 2026 11:45:16 GMT"
+    },
+    {
+      "path": "xsd/xmldsig-core-schema.xsd",
+      "url": "http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd",
+      "sha256": "d102ad3df7664c307e0c2c776ba4a90513b1969974d8a940bae1a77f9f21e15d",
+      "lastModified": "Tue, 16 Apr 2013 12:48:49 GMT"
+    }
+  ],
+  "documents": [
+    {
+      "id": "sweb",
+      "title": "Descripción del servicio web",
+      "version": "1.0.3",
+      "date": "2025-07-28",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/Veri-Factu_Descripcion_SWeb.pdf",
+      "sha256": "b3570f6a308ce98a5f52001a0dc427310ad6cf7bccd60a9ee98720a59e553c02",
+      "lastModified": "Tue, 14 Oct 2025 08:33:28 GMT"
+    },
+    {
+      "id": "validaciones",
+      "title": "Validaciones y errores",
+      "version": "1.2.2",
+      "date": "2026-04-08",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/Validaciones_Errores_Veri-Factu.pdf",
+      "sha256": "426eb926fc098a36a163f66ca5f40d9e0847ca23300bbe5008979832d3513440",
+      "lastModified": "Wed, 08 Apr 2026 08:08:31 GMT"
+    },
+    {
+      "id": "diseno-registro",
+      "title": "Diseño de registro",
+      "version": "1.0",
+      "date": "2024-10-28",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/DsRegistroVeriFactu.xlsx",
+      "sha256": "40ce191aa1def6e44a5f1e86d7ece727258745b34e3fe4d6abe1468252dac2ca",
+      "lastModified": "Mon, 28 Oct 2024 08:35:55 GMT"
+    },
+    {
+      "id": "huella",
+      "title": "Especificaciones técnicas de la huella o hash",
+      "version": "0.1.2",
+      "date": "2024-08-27",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/Veri-Factu_especificaciones_huella_hash_registros.pdf",
+      "sha256": "f4334c254bb875b417247b54315199f89d75a8c4814dfd1e86efec562653d7de",
+      "lastModified": "Tue, 08 Oct 2024 09:58:51 GMT"
+    },
+    {
+      "id": "qr",
+      "title": "Características del QR y servicio de cotejo",
+      "version": "0.5.0",
+      "date": "2025-12-10",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/DetalleEspecificacTecnCodigoQRfactura.pdf",
+      "sha256": "f86b3c260d8a4963dbc18c5007732b53199156c5d1db63242e68db71501b49eb",
+      "lastModified": "Thu, 18 Dec 2025 09:30:09 GMT"
+    },
+    {
+      "id": "firma",
+      "title": "Especificaciones de firma electrónica de registros",
+      "version": "0.1.5",
+      "date": "2025-03-06",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/Espec-Tecnicas/EspecTecGenerFirmaElectRfact.pdf",
+      "sha256": "60953acd5d437a745db9076377739d8ef3f05c31967c1424cd4f6a8ac04af481",
+      "lastModified": "Tue, 11 Mar 2025 06:39:56 GMT"
+    },
+    {
+      "id": "firma-ejemplos",
+      "title": "Ejemplos de firma de registros",
+      "version": "0.1.5",
+      "date": "2025-03-06",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/Espec-Tecnicas/AnexosEjemplosFirmaRegFact.zip",
+      "sha256": "66fac533bef6c93c041b08704bf538843fe552052a2994899aba0875c2c4b24e",
+      "lastModified": "Tue, 04 Feb 2025 09:50:42 GMT"
+    },
+    {
+      "id": "validacion-novf",
+      "title": "Servicio de validación de registros NO VERI*FACTU",
+      "version": "0.2",
+      "date": "2025-09-17",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/Descripcion_ServicioWeb_ValidacionNoVerifactu.pdf",
+      "sha256": "747a9ce4fad2f3f51c6226bd9780f6515a971d3131f39886c60329cd3c662f22",
+      "lastModified": "Mon, 22 Sep 2025 05:36:04 GMT"
+    },
+    {
+      "id": "faq-desarrolladores",
+      "title": "FAQ para desarrolladores",
+      "version": "1.3",
+      "date": "2025-12-04",
+      "url": "https://www.agenciatributaria.es/static_files/AEAT_Desarrolladores/EEDD/IVA/VERI-FACTU/FAQs-Desarrolladores.pdf",
+      "sha256": "73906dc8afbbb9da35f6cb489980352b42aed66d48828fd62a00168883c09d5e",
+      "lastModified": "Wed, 10 Dec 2025 08:31:30 GMT"
+    }
+  ]
+}

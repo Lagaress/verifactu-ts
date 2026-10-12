@@ -1,0 +1,21 @@
+verifactu-ts
+Copyright (c) 2026 Jesús Lagares and verifactu-ts contributors. Licencia MIT.
+
+Este proyecto incluye trabajo derivado de terceros:
+
+1. Verifactu-PHP — https://github.com/josemmo/Verifactu-PHP
+   Copyright (c) 2025-present José M. Moreno <josemmo@pm.me>. Licencia MIT.
+   Se ha portado lógica (modelos, cálculo de huella, reglas de validación, generador de URL
+   del QR, cliente) y tests, tomando como referencia la versión v0.3.4
+   (commit 0fd9d89fa89f0d331434f39f9ffcd8ab8555e7d9). Los ficheros portados lo indican en su
+   cabecera. La correspondencia y las desviaciones están en docs/PHP-CORRESPONDENCE.md.
+
+2. QR Code generator library (TypeScript) — https://www.nayuki.io/page/qr-code-generator-library
+   Copyright (c) Project Nayuki. Licencia MIT. Incluido en src/qr/render/qrcodegen.ts.
+
+3. Material técnico de la Agencia Estatal de Administración Tributaria (AEAT)
+   (esquemas XSD, WSDL, catálogo de errores y ejemplos) en spec/aeat/. Fuente:
+   https://sede.agenciatributaria.gob.es — reutilizado conforme al aviso legal de la Sede
+   («Utilización de la información contenida en la web de la AEAT»). La fecha de última
+   actualización de cada fichero figura en spec/aeat/<versión>/manifest.json.
+   El esquema xmldsig-core-schema.xsd es © W3C (https://www.w3.org/TR/xmldsig-core/).

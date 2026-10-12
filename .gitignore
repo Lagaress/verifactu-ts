@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+.env
+.env.*
+# Certificados: nunca se versionan
+*.p12
+*.pfx
+*.pem
+*.key
+!test/fixtures/**/*.pem
+.DS_Store
