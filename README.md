@@ -1,117 +1,95 @@
-# verifactu-ts — VERI\*FACTU para TypeScript y Node.js
+# verifactu-ts — Spain's VERI\*FACTU for TypeScript and Node.js
 
 [![npm](https://img.shields.io/npm/v/verifactu-ts?label=npm)](https://www.npmjs.com/package/verifactu-ts)
 [![CI](https://github.com/Lagaress/verifactu-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/Lagaress/verifactu-ts/actions/workflows/ci.yml)
-[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue)](./LICENSE)
-[![Sin dependencias](https://img.shields.io/badge/dependencias-0-brightgreen)](./package.json)
-[![Tipos incluidos](https://img.shields.io/badge/tipos-TypeScript-3178c6)](./src/index.ts)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
+[![Zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](./package.json)
+[![TypeScript types](https://img.shields.io/badge/types-TypeScript-3178c6)](./src/index.ts)
 
-Librería **open source** para integrar **VERI\*FACTU** (Agencia Tributaria, AEAT; Real Decreto
-1007/2023, Orden HAC/1177/2024, «Ley Antifraude») en cualquier software de facturación hecho en
-JavaScript o TypeScript. Genera los **registros de facturación** de alta y anulación, calcula la
-**huella (hash SHA-256)** y el encadenamiento, valida con las reglas oficiales, produce el **XML**
-y el **código QR** de cotejo, y **envía y consulta** los registros en el servicio web de la AEAT
-con certificado electrónico. Incluye la **firma XAdES** y los registros de evento de la modalidad
-NO VERI\*FACTU.
+[Español](./README.es.md) · **English**
 
-- **Sin dependencias** en runtime y sin scripts de instalación. El núcleo ocupa unos 22 KB gzip.
-- **Cualquier runtime** con Web Crypto: Node.js ≥ 22, Deno, Bun, navegadores y workers.
-- **Fiel a la especificación**: el XML se genera a partir de los XSD oficiales y se valida contra
-  ellos en los tests. Incluye más de 90 reglas de negocio con su código de error de la AEAT y
-  reproduce los ejemplos oficiales de huella y de firma.
-- TypeScript estricto, ESM, errores tipados y mensajes en español.
+Open-source library to integrate **VERI\*FACTU** — the invoicing records system of the Spanish Tax
+Agency (**AEAT**, Agencia Tributaria; Royal Decree 1007/2023, Order HAC/1177/2024, the
+"Ley Antifraude") — into any invoicing software written in JavaScript or TypeScript. It creates
+**invoice records** (registration and cancellation), computes the **SHA-256 hash (huella)** and
+the record chain, validates them against the official rules, produces the **XML** and the
+verification **QR code**, and **submits and queries** records through the AEAT web service with
+the taxpayer's electronic certificate. It also includes **XAdES signatures** and event records for
+the NO VERI\*FACTU mode.
 
-```sh
-npm install verifactu-ts
-```
-
-> **⚠️ Aviso legal.** Esta librería **no es un Sistema Informático de Facturación (SIF)** y se
-> ofrece **sin declaración responsable**. Quien la integre en su software es responsable de
-> auditarla, de cumplir la normativa aplicable y de emitir su propia declaración responsable.
-> Se distribuye «tal cual», sin garantías (licencia MIT).
-
-<details>
-<summary><strong>English</strong></summary>
-
-**verifactu-ts** is a zero-dependency TypeScript library for **Spain's VERI\*FACTU** invoicing
-system (AEAT, the Spanish Tax Agency; Royal Decree 1007/2023). It covers:
-
-- typed models for invoice records (registration and cancellation);
-- SHA-256 hash chaining;
-- validation against the official AEAT rules;
-- XML generated from the official XSD schemas;
-- verification QR codes;
-- a SOAP client (mutual TLS with the taxpayer's certificate) to submit and query records;
-- XAdES-EPES signatures and event records for the NO VERI\*FACTU mode.
-
-It runs on Node.js ≥ 22, Deno, Bun and browsers. It is a building block for invoicing software,
-**not** a certified invoicing system (SIF): integrators remain responsible for compliance. The API
-uses English identifiers. Documentation and error messages are in Spanish.
-
-```ts
-import { createRegistrationRecord, qrUrl } from 'verifactu-ts';
-
-const record = await createRegistrationRecord({/* invoice data */});
-const url = qrUrl(record, { environment: 'production', mode: 'verifactu' });
-```
-
-</details>
-
-## Especificación soportada
-
-| Documento de la AEAT             | Versión                                             |
-| -------------------------------- | --------------------------------------------------- |
-| Esquemas XSD y WSDL (`tikeV1.0`) | instantánea del 12/10/2026 (`spec/aeat/2026-10-12`) |
-| Descripción del servicio web     | 1.0.3                                               |
-| Validaciones y errores           | 1.2.2 (08/04/2026)                                  |
-| Especificación de la huella      | 0.1.2                                               |
-| QR y servicio de cotejo          | 0.5.0                                               |
-
-En código: `import { SPEC_VERSION } from 'verifactu-ts'`. Las decisiones sobre ambigüedades de la
-especificación están en [docs/SPEC-NOTES.md](./docs/SPEC-NOTES.md).
-
-**Calendario (12/10/2026).** Según el RDL 15/2025, VERI\*FACTU es obligatorio el 1/1/2027
-(contribuyentes del Impuesto sobre Sociedades) y el 1/7/2027 (resto). Hacienda anunció el
-5/10/2026 su intención de aplazarlo a octubre de 2028, pero aún no hay norma publicada.
-
-## Qué hace y qué no
-
-| Hace                                                         | No hace (responsabilidad del SIF)                                            |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| Crear registros de alta y anulación con la huella calculada  | Guardar los registros ni la cadena                                           |
-| Encadenar registros y verificar cadenas                      | Numerar facturas ni elegir series                                            |
-| Validar formato y reglas de negocio de la AEAT               | Comprobar NIF en el censo, duplicados o apoderamientos (eso lo hace la AEAT) |
-| Generar y leer el XML de registros y envíos                  | Esperar `TiempoEsperaEnvio` ni reintentar por sí misma                       |
-| Enviar y consultar en el servicio web (pruebas y producción) | Gestionar colas ni persistir el CSV                                          |
-| URL del QR y QR en SVG                                       | Maquetar la factura                                                          |
-| AEAT simulada para tests                                     | —                                                                            |
-
-**Modalidad NO VERI\*FACTU** (`verifactu-ts/no-verifactu`, experimental). Incluye la firma
-XAdES-EPES de los registros y los registros de evento firmados y encadenados. El envío por
-requerimiento se hace con `client.send(records, { service: 'requirement', requirement })`. La
-detección de anomalías y la conservación de los registros corresponden al SIF.
-
-## Instalación
+- **Zero runtime dependencies** and no install scripts. The core is about 22 KB gzipped.
+- **Any runtime** with Web Crypto: Node.js ≥ 22, Deno, Bun, browsers and workers.
+- **Faithful to the specification**: the XML is generated from the official XSD schemas and
+  validated against them in the tests. It implements 90+ AEAT business rules with their official
+  error codes and reproduces the official hash and signature examples.
+- Strict TypeScript, ESM-only, typed errors. Identifiers are in English; error messages and
+  validation texts are in Spanish (they mirror the AEAT terminology).
 
 ```sh
 npm install verifactu-ts
 ```
 
-Requiere Node.js ≥ 22.12, o Deno, Bun o un navegador moderno para el núcleo. Es un paquete solo
-ESM; desde CommonJS, usa `await import('verifactu-ts')`.
+> **⚠️ Legal notice.** This library **is not an invoicing system (SIF)** and comes **without a
+> declaración responsable**. Whoever integrates it into their software is responsible for
+> auditing it, complying with the applicable regulations and issuing their own declaración
+> responsable. It is provided "as is", without warranty (MIT license).
 
-| Módulo                        | Contenido                                                    |
-| ----------------------------- | ------------------------------------------------------------ |
-| `verifactu-ts`                | Modelos, validación, huella, encadenamiento, XML, URL del QR |
-| `verifactu-ts/client`         | `AeatClient`, errores de red, `fetchTransport`               |
-| `verifactu-ts/transport/node` | Transporte `node:https` con certificado de cliente           |
-| `verifactu-ts/qr/render`      | QR en SVG o matriz                                           |
-| `verifactu-ts/testing`        | AEAT simulada en memoria                                     |
-| `verifactu-ts/errors`         | Catálogo de códigos de error con su descripción oficial      |
+## Supported specification
 
-## Uso
+| AEAT document                     | Version                                         |
+| --------------------------------- | ----------------------------------------------- |
+| XSD schemas and WSDL (`tikeV1.0`) | snapshot of 2026-10-12 (`spec/aeat/2026-10-12`) |
+| Web service description           | 1.0.3                                           |
+| Validations and errors            | 1.2.2 (2026-04-08)                              |
+| Hash specification                | 0.1.2                                           |
+| QR and verification service       | 0.5.0                                           |
 
-### 1. Crear un registro de alta
+In code: `import { SPEC_VERSION } from 'verifactu-ts'`. Decisions on ambiguous points of the
+specification are documented (in Spanish) in [docs/SPEC-NOTES.md](./docs/SPEC-NOTES.md).
+
+**Timeline (as of 2026-10-12).** Under RDL 15/2025, VERI\*FACTU becomes mandatory on 2027-01-01
+(corporate income tax payers) and 2027-07-01 (everyone else). On 2026-10-05 the Spanish Treasury
+announced its intention to postpone it to October 2028, but no regulation has been published yet.
+
+## What it does and what it doesn't
+
+| Does                                                         | Doesn't (the invoicing system's job)                                            |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Create registration and cancellation records with their hash | Store records or the chain                                                      |
+| Chain records and verify chains                              | Number invoices or choose series                                                |
+| Validate format and AEAT business rules                      | Check NIFs against the tax census, duplicates or powers of attorney (AEAT does) |
+| Generate and parse record and submission XML                 | Wait for `TiempoEsperaEnvio` or retry on its own                                |
+| Submit and query records (test and production environments)  | Manage queues or persist the CSV receipt                                        |
+| QR verification URL and QR as SVG                            | Lay out the invoice                                                             |
+| In-memory fake AEAT for tests                                | —                                                                               |
+
+**NO VERI\*FACTU mode** (`verifactu-ts/no-verifactu`, experimental): XAdES-EPES signatures for
+records, and signed, chained event records. Submission upon request uses
+`client.send(records, { service: 'requirement', requirement })`. Anomaly detection and record
+retention are the invoicing system's responsibility.
+
+## Installation
+
+```sh
+npm install verifactu-ts
+```
+
+Requires Node.js ≥ 22.12, or Deno, Bun or a modern browser for the core. ESM-only package; from
+CommonJS use `await import('verifactu-ts')`.
+
+| Module                        | Contents                                                 |
+| ----------------------------- | -------------------------------------------------------- |
+| `verifactu-ts`                | Models, validation, hash, chaining, XML, QR URL          |
+| `verifactu-ts/client`         | `AeatClient`, network errors, `fetchTransport`           |
+| `verifactu-ts/transport/node` | `node:https` transport with client certificate           |
+| `verifactu-ts/qr/render`      | QR code as SVG or matrix                                 |
+| `verifactu-ts/no-verifactu`   | XAdES-EPES signatures and event records (NO VERI\*FACTU) |
+| `verifactu-ts/testing`        | In-memory fake AEAT                                      |
+| `verifactu-ts/errors`         | AEAT error code catalogue with official descriptions     |
+
+## Usage
+
+### 1. Create a registration record
 
 ```ts
 import { createRegistrationRecord, toChainLink } from 'verifactu-ts';
@@ -120,13 +98,13 @@ const record = await createRegistrationRecord({
   invoiceId: { issuerId: 'A00000000', invoiceNumber: 'F2025-0042', issueDate: '2025-06-01' },
   issuerName: 'Perico de los Palotes, S.A.',
   invoiceType: 'F1',
-  description: 'Servicios de consultoría',
-  recipients: [{ name: 'Cliente Ejemplo SL', nif: '00000000A' }],
+  description: 'Consulting services',
+  recipients: [{ name: 'Example Customer SL', nif: '00000000A' }],
   breakdown: [
     {
-      taxType: '01',
-      regimeType: '01',
-      operationType: 'S1',
+      taxType: '01', // VAT (IVA)
+      regimeType: '01', // general regime
+      operationType: 'S1', // subject and not exempt
       taxRate: '21',
       baseAmount: '1000.00',
       taxAmount: '210.00',
@@ -134,53 +112,53 @@ const record = await createRegistrationRecord({
   ],
   totalTaxAmount: '210.00',
   totalAmount: '1210.00',
-  previous: ultimoEnlace, // ChainLink del registro anterior, o null si es el primero
-  system, // datos del sistema informático (ComputerSystem)
-  hashedAt: new Date(), // se formatea en Europe/Madrid; también { instant, timeZone } o una cadena
+  previous: lastLink, // ChainLink of the previous record, or null for the first one
+  system, // your invoicing system's data (ComputerSystem)
+  hashedAt: new Date(), // formatted in Europe/Madrid; also { instant, timeZone } or a string
 });
 
-record.hash; // huella SHA-256 (64 caracteres hexadecimales en mayúsculas)
-await guardar(record, toChainLink(record)); // el siguiente registro se encadena con este enlace
+record.hash; // SHA-256 hash (64 uppercase hex characters)
+await save(record, toChainLink(record)); // the next record chains to this link
 ```
 
-- Los importes son **cadenas decimales** (`'1210.00'`) para que el texto del XML y el de la huella
-  coincidan exactamente. Se normalizan a 2 decimales. Para convertir:
-  `centsToAmount(121000n)` y `amountFromNumber(1210)`.
-- Las fechas de factura son `AAAA-MM-DD`. Las claves (`InvoiceType`, `TaxType`, `RegimeType`,
-  `OperationType`…) se pueden usar como enums (`InvoiceType.Factura`) o como literales (`'F1'`).
-- `createRegistrationRecord` **valida** el registro y lanza `ValidationError` con todas las
-  violaciones si alguna provocaría el rechazo de la AEAT.
+- Amounts are **decimal strings** (`'1210.00'`), so the text in the XML and in the hash match
+  exactly. They are normalised to 2 decimals. Helpers: `centsToAmount(121000n)` and
+  `amountFromNumber(1210)`.
+- Invoice dates are `YYYY-MM-DD`. Codes (`InvoiceType`, `TaxType`, `RegimeType`, `OperationType`…)
+  can be used as enums (`InvoiceType.Factura`) or as literals (`'F1'`).
+- `createRegistrationRecord` **validates** the record and throws a `ValidationError` with every
+  violation if any of them would make the AEAT reject it.
 
-Para anular una factura, usa `createCancellationRecord({ invoiceId, previous, system, hashedAt })`.
-Para subsanar un registro, crea un alta nueva con `isCorrection: true`, y con
-`priorRejection: 'X'` si el alta original fue rechazada.
+To cancel an invoice, use `createCancellationRecord({ invoiceId, previous, system, hashedAt })`.
+To correct a record, create a new registration with `isCorrection: true`, plus
+`priorRejection: 'X'` if the original registration was rejected.
 
-### 2. Validar
+### 2. Validate
 
 ```ts
 import { validateRecord } from 'verifactu-ts';
 
 for (const v of validateRecord(record)) {
   console.log(v.severity, v.path, v.message, v.aeatCode, v.reference);
-  // 'error'     → la AEAT rechazaría el registro
-  // 'admisible' → la AEAT lo aceptaría con errores y habría que subsanarlo
+  // 'error'     → the AEAT would reject the record
+  // 'admisible' → the AEAT would accept it with errors and it must be corrected
 }
 ```
 
-### 3. Código QR
+### 3. QR code
 
 ```ts
 import { qrUrl } from 'verifactu-ts';
 import { qrSvg } from 'verifactu-ts/qr/render';
 
 const url = qrUrl(record, { environment: 'production', mode: 'verifactu' });
-const svg = qrSvg(url, { size: '35mm' }); // corrección de errores M, como exige la AEAT
+const svg = qrSvg(url, { size: '35mm' }); // error correction level M, as the AEAT requires
 ```
 
-La factura debe mostrar «QR tributario:» encima del código y «VERI\*FACTU» (o «Factura
-verificable en la sede electrónica de la AEAT») debajo, con un tamaño de entre 30 y 40 mm.
+The invoice must show "QR tributario:" above the code and "VERI\*FACTU" (or "Factura verificable
+en la sede electrónica de la AEAT") below it, with a size between 30 and 40 mm.
 
-### 4. Enviar a la AEAT
+### 4. Submit to the AEAT
 
 ```ts
 import { readFile } from 'node:fs/promises';
@@ -189,42 +167,42 @@ import { nodeTransport } from 'verifactu-ts/transport/node';
 
 const client = new AeatClient({
   transport: nodeTransport({
-    pfx: await readFile('certificado.p12'),
+    pfx: await readFile('certificate.p12'),
     passphrase: process.env.CERT_PASS,
   }),
-  environment: 'test', // o 'production'
-  certificateType: 'personal', // o 'seal' (sello electrónico)
+  environment: 'test', // or 'production'
+  certificateType: 'personal', // or 'seal' (electronic seal certificate)
   taxpayer: { name: 'Perico de los Palotes, S.A.', nif: 'A00000000' },
   system,
 });
 
-const res = await client.send([record]); // hasta 1000 registros (chunkRecords para más)
+const res = await client.send([record]); // up to 1000 records (use chunkRecords for more)
 res.status; // 'Correcto' | 'ParcialmenteCorrecto' | 'Incorrecto'
-res.csv; // guárdalo: la AEAT no lo vuelve a dar
-res.items; // por registro: status, error (code, description, kind), duplicate
-nextSendAllowedAt(res); // respeta TiempoEsperaEnvio antes del siguiente envío
+res.csv; // store it: the AEAT will not give it to you again
+res.items; // per record: status, error (code, description, kind), duplicate
+nextSendAllowedAt(res); // honour TiempoEsperaEnvio before the next submission
 ```
 
-Errores que puede lanzar:
+Errors it can throw:
 
-| Error              | Cuándo se lanza                                                                   |
-| ------------------ | --------------------------------------------------------------------------------- |
-| `ValidationError`  | La validación local falla antes de enviar.                                        |
-| `SoapFaultError`   | La AEAT rechaza la petición entera. Lleva `aeatCode` y `retryable`.               |
-| `TransportError`   | Falla la red, hay un HTTP inesperado o la respuesta no es XML. Lleva `retryable`. |
-| `CertificateError` | El certificado no se puede usar: contraseña incorrecta o algoritmos antiguos.     |
+| Error              | When                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| `ValidationError`  | Local validation fails before sending.                                               |
+| `SoapFaultError`   | The AEAT rejects the whole request. Includes `aeatCode` and `retryable`.             |
+| `TransportError`   | Network failure, unexpected HTTP status or a non-XML response. Includes `retryable`. |
+| `CertificateError` | The certificate can't be used: wrong password or legacy algorithms.                  |
 
-**Reintentos.** Si un `TransportError` llega después de enviar la petición (por ejemplo, un
-corte mientras se espera la respuesta), la AEAT puede haber registrado ya los registros. Al
-reintentar, esos registros vendrán como duplicados (error 3000) con `item.duplicate`. Si el
-estado del duplicado es `Correcta` o `AceptadaConErrores`, considéralos entregados.
+**Retries.** If a `TransportError` happens after the request was sent (for example, the
+connection drops while waiting for the response), the AEAT may already have stored the records.
+On retry they will come back as duplicates (error 3000) with `item.duplicate`. If the duplicate's
+status is `Correcta` or `AceptadaConErrores`, treat them as delivered.
 
-**Certificados antiguos.** Muchos PKCS#12 exportados desde Windows o la FNMT usan RC2-40, que
-OpenSSL 3 ya no admite. `nodeTransport` lo detecta al crearse y explica cómo convertirlo. Otra
-opción es ejecutar Node con `NODE_OPTIONS=--openssl-legacy-provider`.
+**Legacy certificates.** Many PKCS#12 files exported from Windows or the FNMT use RC2-40, which
+OpenSSL 3 no longer supports. `nodeTransport` detects this when it is created and explains how to
+convert the file. Alternatively, run Node with `NODE_OPTIONS=--openssl-legacy-provider`.
 
-**Deno, Bun y otros entornos.** Usa `fetchTransport` con la opción de certificado de cliente de
-cada runtime:
+**Deno, Bun and other runtimes.** Use `fetchTransport` with each runtime's client-certificate
+option:
 
 ```ts
 import { fetchTransport } from 'verifactu-ts/client';
@@ -234,7 +212,7 @@ const transport = fetchTransport({ init: { client: Deno.createHttpClient({ cert,
 const transport = fetchTransport({ init: { tls: { cert, key } } });
 ```
 
-### 5. Consultar
+### 5. Query
 
 ```ts
 for await (const r of client.query({ year: 2025, month: 6 })) {
@@ -242,7 +220,7 @@ for await (const r of client.query({ year: 2025, month: 6 })) {
 }
 ```
 
-### 6. NO VERI\*FACTU: firma y eventos
+### 6. NO VERI\*FACTU: signatures and events
 
 ```ts
 import {
@@ -253,28 +231,28 @@ import {
   toEventChainLink,
 } from 'verifactu-ts/no-verifactu';
 
-// PEM sin cifrar; desde un PKCS#12: openssl pkcs12 -in cert.p12 -nodes -out cert.pem
-const credentials = await loadPemCredentials({ key: pemClave, certificates: pemCertificados });
+// Unencrypted PEM; from a PKCS#12: openssl pkcs12 -in cert.p12 -nodes -out cert.pem
+const credentials = await loadPemCredentials({ key: keyPem, certificates: certificatesPem });
 
-const signed = await signRecord(record, credentials); // XAdES-EPES; la huella no cambia
+const signed = await signRecord(record, credentials); // XAdES-EPES; the hash doesn't change
 const event = await createEventRecord(
   {
     system,
     taxpayer,
     eventType: EventType.StartNoVerifactu,
-    previous: ultimoEvento,
+    previous: lastEvent,
     generatedAt: new Date(),
   },
   credentials,
 );
-await guardar(event, toEventChainLink(event));
+await save(event, toEventChainLink(event));
 ```
 
-La firma reproduce la estructura del ejemplo oficial de la AEAT, y los tests verifican la firma de
-ese ejemplo con el mismo código. Antes de usarla en producción, consulta las notas pendientes de
-contrastar en [docs/SPEC-NOTES.md](./docs/SPEC-NOTES.md#no-verifactu-firma-xades-y-eventos).
+The signature follows the structure of the official AEAT example, and the tests verify that
+example's signature with the same code. Before using it in production, read the open points in
+[docs/SPEC-NOTES.md](./docs/SPEC-NOTES.md#no-verifactu-firma-xades-y-eventos).
 
-### 7. Probar sin certificado
+### 7. Test without a certificate
 
 ```ts
 import { createFakeAeat } from 'verifactu-ts/testing';
@@ -288,48 +266,48 @@ const client = new AeatClient({
 });
 ```
 
-La AEAT simulada valida el XML contra el esquema y aplica las reglas de la librería. También
-detecta duplicados, anulaciones de registros inexistentes y huellas incorrectas, y pagina las
-consultas. **No sustituye** a las pruebas en el entorno de pruebas real de la AEAT.
+The fake AEAT validates the XML against the schema and applies the library's rules. It also
+detects duplicates, cancellations of unknown records and wrong hashes, and paginates queries. It
+**does not replace** testing against the real AEAT test environment.
 
-Hay ejemplos completos y ejecutables en [`examples/`](./examples).
+Complete, runnable examples are in [`examples/`](./examples).
 
-## Tamaño
+## Size
 
-Medido con esbuild (minificado + gzip) sobre lo que se importa; se comprueba en CI
-(`npm run size`).
+Measured with esbuild (minified + gzip) on what you import; checked in CI (`npm run size`).
 
-| Uso                                | gzip    |
-| ---------------------------------- | ------- |
-| Huella + URL del QR                | 1,3 KB  |
-| Crear y validar registros          | 9,6 KB  |
-| Cliente completo + transporte Node | 22,1 KB |
-| QR en SVG                          | 2,6 KB  |
-| NO VERI\*FACTU (firma + eventos)   | 15,3 KB |
+| Use                                 | gzip    |
+| ----------------------------------- | ------- |
+| Hash + QR URL                       | 1.3 KB  |
+| Create and validate records         | 9.6 KB  |
+| Full client + Node transport        | 22.1 KB |
+| QR as SVG                           | 2.6 KB  |
+| NO VERI\*FACTU (signature + events) | 15.3 KB |
 
-## Hoja de ruta
+## Roadmap
 
-1. ✅ VERI\*FACTU: registros, huella, validación, XML, QR, envío y consulta.
-2. 🧪 NO VERI\*FACTU: firma XAdES-EPES y registros de evento (experimental, pendiente de
-   contrastar con el servicio de requerimiento de la AEAT).
-3. ⏳ Factura electrónica B2B (Orden HAC/1028/2026): UBL según EN 16931 y envío a la solución
-   pública de la AEAT, cuando se publiquen las especificaciones técnicas.
+1. ✅ VERI\*FACTU: records, hash, validation, XML, QR, submission and queries.
+2. 🧪 NO VERI\*FACTU: XAdES-EPES signatures and event records (experimental, to be confirmed
+   against the AEAT submission-upon-request service).
+3. ⏳ B2B e-invoicing (Order HAC/1028/2026): UBL invoices following EN 16931 and submission to the
+   AEAT public e-invoicing platform, once the technical specifications are published.
 
-## Desarrollo
+## Development
 
 ```sh
 npm ci
-npm run ci                # typecheck, lint, formato, generados al día, tests, paquete y tamaño
-npm run test:integration  # entorno de pruebas de la AEAT; requiere certificado (ver test/integration)
+npm run ci                # typecheck, lint, format, generated code, tests, package and size
+npm run test:integration  # AEAT test environment; needs a certificate (see test/integration)
 ```
 
-Para actualizar a una nueva versión de la especificación, sigue [MAINTAINING.md](./MAINTAINING.md).
-La correspondencia con Verifactu-PHP está en [docs/PHP-CORRESPONDENCE.md](./docs/PHP-CORRESPONDENCE.md).
+To update to a new specification version, follow [MAINTAINING.md](./MAINTAINING.md). The mapping to
+Verifactu-PHP is in [docs/PHP-CORRESPONDENCE.md](./docs/PHP-CORRESPONDENCE.md). Contributions are
+welcome: see [CONTRIBUTING.md](./CONTRIBUTING.md). Internal documentation is in Spanish.
 
-## Licencia y atribución
+## License and attribution
 
-MIT. Incluye lógica y tests portados de [Verifactu-PHP](https://github.com/josemmo/Verifactu-PHP)
-(© José M. Moreno, MIT) y una adaptación del generador QR de
-[Project Nayuki](https://www.nayuki.io/page/qr-code-generator-library) (MIT). Los esquemas y
-ejemplos de `spec/` son de la Agencia Tributaria y se reutilizan citando la fuente y la fecha. Ver
-[NOTICE](./NOTICE).
+MIT. Includes logic and tests ported from [Verifactu-PHP](https://github.com/josemmo/Verifactu-PHP)
+(© José M. Moreno, MIT) and an adaptation of
+[Project Nayuki](https://www.nayuki.io/page/qr-code-generator-library)'s QR code generator (MIT).
+The schemas and examples in `spec/` belong to the Agencia Tributaria and are reused citing their
+source and date. See [NOTICE](./NOTICE).

@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones según
 [SemVer](https://semver.org/lang/es/). Cada versión indica la especificación de la AEAT soportada.
 
+## [0.5.1] - 2026-10-12
+
+### Cambiado
+
+- README principal en inglés (`README.md`) con la versión completa en español en `README.es.md`.
+- Descripción del paquete en inglés primero, manteniendo los términos en español.
+- Primera versión publicada desde GitHub Actions con Trusted Publishing y provenance.
+
 ## [0.5.0] - 2026-10-12
 
 Primera versión publicada. Empieza en 0.5.0 porque el nombre `verifactu-ts` lo usó antes otro

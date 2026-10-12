@@ -1,7 +1,7 @@
 {
   "name": "verifactu-ts",
-  "version": "0.5.0",
-  "description": "VERI*FACTU (AEAT) para TypeScript y Node.js: registros de facturación, huella SHA-256, QR, firma XAdES y envío SOAP a la Agencia Tributaria. Sin dependencias · Spain VeriFactu library",
+  "version": "0.5.1",
+  "description": "Spain's VERI*FACTU (AEAT) for TypeScript & Node.js: invoice records, SHA-256 hash chain, QR, XAdES signatures and SOAP submission to the Agencia Tributaria. Zero dependencies · Librería VeriFactu",
   "keywords": [
     "verifactu",
     "veri-factu",
@@ -86,7 +86,8 @@
     "dist",
     "LICENSE",
     "NOTICE",
-    "README.md"
+    "README.md",
+    "README.es.md"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.types.json",
