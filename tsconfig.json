@@ -24,8 +24,16 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "verifactu-ts": ["./src/index.ts"],
+      "verifactu-ts/client": ["./src/client/index.ts"],
+      "verifactu-ts/transport/node": ["./src/client/transports/node.ts"],
+      "verifactu-ts/qr/render": ["./src/qr/render/index.ts"],
+      "verifactu-ts/testing": ["./src/testing/index.ts"],
+      "verifactu-ts/errors": ["./src/errors.ts"]
+    }
   },
-  "include": ["src", "test", "scripts", "*.config.ts"],
+  "include": ["src", "test", "scripts", "examples", "*.config.ts"],
   "exclude": ["test/fixtures/nayuki"]
 }

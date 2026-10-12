@@ -1,0 +1,38 @@
+name: Publicar en npm
+
+# Se ejecuta al publicar una release de GitHub con etiqueta vX.Y.Z.
+# Requisitos (una sola vez, ver MAINTAINING.md):
+#   1. El paquete existe en npm (primera publicación manual con 2FA).
+#   2. En npmjs.com → verifactu-ts → Settings → Trusted Publisher: GitHub Actions,
+#      repositorio Lagaress/verifactu-ts, workflow «release.yml», entorno «npm».
+#   3. En GitHub → Settings → Environments → «npm» con revisores obligatorios.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # OIDC para Trusted Publishing y provenance
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false # sin caché en builds de publicación
+      - name: npm ≥ 11.5.1 (necesario para Trusted Publishing)
+        run: npm install -g npm@11
+      - run: npm ci
+      - name: La etiqueta coincide con package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          test "v${version}" = "${GITHUB_REF_NAME}" || { echo "Etiqueta ${GITHUB_REF_NAME} ≠ v${version}"; exit 1; }
+      - run: npm run ci
+      - run: npm publish --provenance --access public
