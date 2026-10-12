@@ -1,5 +1,9 @@
 import type { IsoDate } from '../common/dates.ts';
+import type { CountryType2 } from '../xml/generated/suministro-informacion.ts';
 import type { ForeignIdType } from './enums.ts';
+
+/** Código de país ISO 3166-1 alfa-2 admitido por la AEAT (lista L5 / `CountryType2` del XSD). */
+export type CountryCode = CountryType2;
 
 /**
  * Identificador de una factura (`IDFactura`).
@@ -39,7 +43,7 @@ export interface ForeignFiscalIdentifier {
   /** Nombre y apellidos o razón social (`NombreRazon`), hasta 120 caracteres. */
   readonly name: string;
   /** Código de país ISO 3166-1 alfa-2 (`CodigoPais`). */
-  readonly country?: string;
+  readonly country?: CountryCode;
   /** Tipo de identificación (`IDType`). */
   readonly type: ForeignIdType;
   /** Número de identificación (`ID`), hasta 20 caracteres. */

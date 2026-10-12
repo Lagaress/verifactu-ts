@@ -24,6 +24,11 @@ export * from './chain/chain.ts';
 export * from './validation/validate.ts';
 export type * from './validation/violation.ts';
 
+export { recordFromXml, recordToWire, recordToXml } from './xml/records.ts';
+export { buildSubmissionXml, soapEnvelope, type SubmissionHeader } from './xml/soap.ts';
+export { parseXml, type XmlElement, type ParseLimits } from './xml/reader.ts';
+export type { RawXml } from './xml/raw-xml.ts';
+
 export * from './qr/url.ts';
 
 export * from './spec/version.ts';

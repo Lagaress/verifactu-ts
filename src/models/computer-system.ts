@@ -1,4 +1,5 @@
 import type { ForeignIdType } from './enums.ts';
+import type { CountryCode } from './identifiers.ts';
 
 /**
  * Sistema informático de facturación que genera los registros (`SistemaInformatico`).
@@ -14,7 +15,7 @@ export interface ComputerSystem {
   readonly vendorNif?: string;
   /** Identificación del productor sin NIF español (`IDOtro`). */
   readonly vendorForeignId?: {
-    readonly country?: string;
+    readonly country?: CountryCode;
     readonly type: ForeignIdType;
     readonly value: string;
   };

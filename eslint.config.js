@@ -25,6 +25,8 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-exports': 'error',
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      // Choca con no-non-null-assertion: preferimos `as T` explícito a `!`.
+      '@typescript-eslint/non-nullable-type-assertion-style': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
@@ -54,7 +56,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.js'],
+    files: ['**/*.js', '**/*.mjs'],
     ...tseslint.configs.disableTypeChecked,
   },
 );
