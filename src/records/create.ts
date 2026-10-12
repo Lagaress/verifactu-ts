@@ -4,7 +4,7 @@ import {
   parseDateTimeWithOffset,
   type DateTimeWithOffset,
 } from '../common/dates.ts';
-import { ValidationError } from '../common/errors.ts';
+import { InvalidArgumentError, ValidationError } from '../common/errors.ts';
 import { calculateHash } from '../hash/hash.ts';
 import type {
   BreakdownDetails,
@@ -130,8 +130,21 @@ async function finish<R extends RegistrationRecord | CancellationRecord>(
   draft: R,
   options: CreateOptions,
 ): Promise<R> {
-  const record = { ...draft, hash: await calculateHash(draft) };
-  if (options.validate ?? true) {
+  const validate = options.validate ?? true;
+  let hash: string;
+  try {
+    hash = await calculateHash(draft);
+  } catch (error) {
+    // Si la huella no se puede calcular (p. ej. una fecha inexistente), se informa de todas las
+    // violaciones del registro en lugar de solo del primer dato inválido.
+    if (validate && error instanceof InvalidArgumentError) {
+      const violations = validateRecord(draft).filter((v) => v.rule !== 'format.hash');
+      if (violations.some((v) => v.severity === 'error')) throw new ValidationError(violations);
+    }
+    throw error;
+  }
+  const record = { ...draft, hash };
+  if (validate) {
     const violations = validateRecord(record);
     if (violations.some((v) => v.severity === 'error')) throw new ValidationError(violations);
   }

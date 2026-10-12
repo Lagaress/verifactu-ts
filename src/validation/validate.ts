@@ -11,6 +11,11 @@ export interface ValidationContext {
    * del sistema en `Europe/Madrid`.
    */
   readonly today?: string;
+  /**
+   * NIF del obligado a expedir de la cabecera del envío (`ObligadoEmision`). Si se indica, se
+   * comprueba que coincide con el emisor de la factura (error 1108).
+   */
+  readonly taxpayerNif?: string;
 }
 
 /**
