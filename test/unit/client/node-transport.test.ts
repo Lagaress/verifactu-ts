@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:https';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -24,7 +24,7 @@ const hasOpenssl = (() => {
 
 describe.skipIf(!hasOpenssl)('nodeTransport', () => {
   let dir: string;
-  let server: Server;
+  let server: Server | undefined;
   let url: string;
   const file = (name: string) => readFileSync(join(dir, name));
   const ssl = (...args: string[]) => execFileSync('openssl', args, { cwd: dir, stdio: 'pipe' });
@@ -46,6 +46,7 @@ describe.skipIf(!hasOpenssl)('nodeTransport', () => {
       '-subj',
       '/CN=CA de pruebas',
     );
+    writeFileSync(join(dir, 'server.ext'), 'subjectAltName=DNS:localhost,IP:127.0.0.1\n');
     for (const [name, cn] of [
       ['server', 'localhost'],
       ['client', 'CLIENTE PRUEBA - 00000000T'],
@@ -62,26 +63,22 @@ describe.skipIf(!hasOpenssl)('nodeTransport', () => {
         '-subj',
         `/CN=${cn}`,
       );
-      const ext = name === 'server' ? ['-extfile', '/dev/stdin'] : [];
-      execFileSync(
-        'openssl',
-        [
-          'x509',
-          '-req',
-          '-in',
-          `${name}.csr`,
-          '-CA',
-          'ca.pem',
-          '-CAkey',
-          'ca.key',
-          '-CAcreateserial',
-          '-out',
-          `${name}.pem`,
-          '-days',
-          '1',
-          ...ext,
-        ],
-        { cwd: dir, stdio: 'pipe', input: 'subjectAltName=DNS:localhost,IP:127.0.0.1' },
+      const ext = name === 'server' ? ['-extfile', 'server.ext'] : [];
+      ssl(
+        'x509',
+        '-req',
+        '-in',
+        `${name}.csr`,
+        '-CA',
+        'ca.pem',
+        '-CAkey',
+        'ca.key',
+        '-CAcreateserial',
+        '-out',
+        `${name}.pem`,
+        '-days',
+        '1',
+        ...ext,
       );
     }
     ssl(
@@ -149,13 +146,17 @@ describe.skipIf(!hasOpenssl)('nodeTransport', () => {
         });
       },
     );
-    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-    url = `https://localhost:${(server.address() as AddressInfo).port}`;
+    const listening = server;
+    await new Promise<void>((resolve) => listening.listen(0, '127.0.0.1', resolve));
+    url = `https://localhost:${(listening.address() as AddressInfo).port}`;
   });
 
   afterAll(() => {
-    server.closeAllConnections();
-    server.close();
+    // Si beforeAll falló, el servidor no existe.
+    if (typeof server !== 'undefined') {
+      server.closeAllConnections();
+      server.close();
+    }
     rmSync(dir, { recursive: true, force: true });
   });
 
